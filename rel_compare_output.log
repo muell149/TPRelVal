@@ -1,0 +1,8 @@
+Entries in tree0:  3586600
+Entries in tree1:  5056000
+Events in rel0:  8900
+Events in rel1:  8900
+Paths in rel0:  453
+Paths in rel1:  453
+events with paths that fired in 620_pre6 and didn't fire in 620_pre7 207
+events with paths that fired in 620_pre7 and didn't fire in 620_pre6 200
