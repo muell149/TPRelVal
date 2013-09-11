@@ -1,5 +1,5 @@
 from ROOT import TFile,TTree,TH2D
-
+#new updates reflected in git commit
 
 def fillDictMany(has_key_already,tree,key):
    if has_key_already:
@@ -14,11 +14,11 @@ def fillDictOnce(has_key_already,tree,key):
    return tree
 
 
-rel0 = '620_pre8'
-rel1 = '620'
+rel0 = '700pre1'
+rel1 = '700pre2'
 output = open(rel0+'_'+rel1+'_compare_output.log',"wb")
-file0 = '/afs/cern.ch/user/m/muell149/work/muell149/HLTONLINE/CMSSW_6_2_0_pre6/src/DQMOffline/Trigger/test/'+rel0+'.root'
-file1 = '/afs/cern.ch/user/m/muell149/work/muell149/HLTONLINE/CMSSW_6_2_0_pre6/src/DQMOffline/Trigger/test/'+rel1+'.root'
+file0 = '/afs/cern.ch/user/m/muell149/work/muell149/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel0+'.root'
+file1 = '/afs/cern.ch/user/m/muell149/work/muell149/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel1+'.root'
 file_rel0 = TFile(file0)
 file_rel1 = TFile(file1)
 hlt_tree0 = file_rel0.Get('genparticles/the_HLT_tree')
