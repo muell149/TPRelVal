@@ -9,12 +9,12 @@ def fillDict(tree,key,fillMany):
    return tree
 
 def main():
-   rel0 = 'SingleMuPt100_TriggerRef25ns_GT'
-   rel1 = 'SingleMuPt100_TriggerNew25ns_GT'
-   output = open(rel0+'_'+rel1+'_compare_output2.log',"w")
-   outputA = open(rel0+'_'+rel1+'_compare_outputA2.csv',"w")
-   file0 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_6_2_0_pre6/src/DQMOffline/Trigger/test/'+rel0+'.root'
-   file1 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_6_2_0_pre6/src/DQMOffline/Trigger/test/'+rel1+'.root'
+   rel0 = '700pre9'
+   rel1 = '700pre10'
+   output = open(rel0+'_'+rel1+'_compare_output.log',"w")
+   outputA = open(rel0+'_'+rel1+'_compare_outputA.csv',"w")
+   file0 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel0+'.root'
+   file1 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel1+'.root'
    file_rel0 = TFile(file0)
    file_rel1 = TFile(file1)
    hlt_tree0 = file_rel0.Get('genparticles/the_HLT_tree')
@@ -145,7 +145,7 @@ def main():
    output.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel1,"2":rel0,"3": sum_path_fired1_not0})
    output.write("# of events that changed from %(1)s to %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_changes})
    output.write("total # of events in %(1)s: %(2)s\n"%{"1":rel0,"2":entries0/(pidx0+1)})
-   output.write("total # of events in %(1)s: %(2)s\n"%{"1":rel1,"2":entries0/(pidx1+1)})
+   output.write("total # of events in %(1)s: %(2)s\n"%{"1":rel1,"2":entries1/(pidx1+1)})
    output.write(" \n")
    output.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
    output.write(" \n")
