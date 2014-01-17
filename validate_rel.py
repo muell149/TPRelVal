@@ -8,6 +8,39 @@ def fillDict(tree,key,fillMany):
       tree[key] = 1
    return tree
 
+def fillDecayType(gen_tree):
+   num_ele=0
+   num_mu=0
+   num_tau=0
+   for obj in xrange(100):
+      if abs(gen_tree.gen_ID[obj]) == 11:
+         num_ele += 1
+      if abs(gen_tree.gen_ID[obj]) == 13:
+         num_mu += 1
+      if abs(gen_tree.gen_ID[obj]) == 15:
+         num_tau += 1
+
+   if num_ele == 2:
+      yaxis_decay_type = 0
+   elif num_mu == 2:
+      yaxis_decay_type = 1
+   elif num_tau == 2:
+      yaxis_decay_type = 2
+   elif num_ele==1 and num_mu==1:
+      yaxis_decay_type = 3
+   elif num_ele==1 and num_tau==1:
+      yaxis_decay_type = 4
+   elif num_mu==1 and num_tau==1:
+      yaxis_decay_type = 5
+   elif num_ele==1 and (num_mu+num_tau)==0:
+      yaxis_decay_type = 6
+   elif num_mu==1 and (num_ele+num_tau)==0:
+      yaxis_decay_type = 7
+   elif num_tau==1 and (num_mu+num_ele)==0:
+      yaxis_decay_type = 8
+   elif (num_mu+num_ele+num_tau)==0:
+      yaxis_bin_decay_type_vs_datasets = 9; }
+
 def main():
    rel0 = '700pre9'
    rel1 = '700pre10'
