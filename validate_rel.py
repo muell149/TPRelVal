@@ -84,8 +84,8 @@ def main():
    path_accept1 = {'path' : 0}
    events_that_changed = {'event' : 0}
    dataset_v_path = {'path': 'dataset'}
-   datasetIDX_v_path0 = {'path': 0}
-   datasetIDX_v_path1 = {'path':0}
+   datasetIDX_v_path = {'path': 0}
+   
    #make hists
    fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",50,0,50,10,0,10)
    fired_rel1_not0_decayType_vs_dataset= TH2F("fired_rel1_didntfire_rel0_decay_type_vs_datasets","fired_rel1_didntfire_rel0_decay_type_vs_datasets",50,0,50,10,0,10)
@@ -121,13 +121,14 @@ def main():
    fired_rel1_not0_decayType_vs_dataset.SetStats(0)
    
    #for ientry in xrange(1000000):
+  
    for ientry in xrange(entries0):
       
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      #if ientry>100:
-      #   break
+      if ientry>1000:
+         break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
@@ -163,7 +164,7 @@ def main():
       gen_tree1.GetEntry(ientry)
       
       if gen_tree0.event != gen_tree1.event:
-         print "gen tree events are not equal!!!!!!!!!!!!!!!!!!!!"
+         print "WARNING: gen_tree events do not match!"
 
       
       if proceed and hlt_tree0.event == hlt_tree1.event and hlt_tree0.path_name == hlt_tree1.path_name:#make sure events are matching
@@ -173,20 +174,25 @@ def main():
 
          event = hlt_tree0.event
          name = hlt_tree0.path_name[:hlt_tree0.path_name.find('\x00')]
-         
-         dsmap0 = file_rel0.Get("newHLTOffline/map_of_trig_to_trig_types")
-         dsmap1 = file_rel1.Get("newHLTOffline/map_of_trig_to_trig_types")
-         for ds in xrange(1,51):
-            #print ds, dsmap1.GetBinContent(410,ds)
-            fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap0.GetYaxis().GetBinLabel(ds))
-            fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap1.GetYaxis().GetBinLabel(ds))
-            if dsmap0.GetBinContent(hlt_tree0.path_index,ds):
-               dataset_v_path[name] = dsmap0.GetYaxis().GetBinLabel(ds)
-               datasetIDX_v_path0[name] = ds
-            if dsmap1.GetBinContent(hlt_tree1.path_index,ds):
-               dataset_v_path[name] = dsmap0.GetYaxis().GetBinLabel(ds)
-               datasetIDX_v_path1[name] = ds
-               
+
+
+###################### stuff for primary datasets ################
+         dsmap = file_rel0.Get("newHLTOffline/map_of_trig_to_trig_types")
+         num_PD = 43 #number of primary datsets - 1
+         fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetBinLabel(num_PD,"NONE")#need to add these since some paths don't have a dataset
+         fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetBinLabel(num_PD,"NONE")
+         for ds in xrange(1,num_PD):
+            fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap.GetYaxis().GetBinLabel(ds))
+            fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap.GetYaxis().GetBinLabel(ds))
+            
+            if dsmap.GetBinContent(hlt_tree0.path_index,ds):
+               dataset_v_path[name] = dsmap.GetYaxis().GetBinLabel(ds)
+               datasetIDX_v_path[name] = ds
+        
+         if not dataset_v_path.has_key(name):#check to see if path has a PD, if not, add "NONE" 
+            dataset_v_path[name] = "NONE"
+            datasetIDX_v_path[name] = num_PD
+###################### stuff for primary datasets ################
                
          if hlt_tree0.path_accept:
 
@@ -198,7 +204,7 @@ def main():
                fillDict(path_fired0_not1,name,0)               
                fillDict(events_that_changed,event,0)
                decaytype = GetDecayType(gen_tree0)
-               fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path0[name],decaytype)
+               fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path[name],decaytype)
 
                
          if hlt_tree1.path_accept:
@@ -211,13 +217,8 @@ def main():
                fillDict(path_fired1_not0,name,0)
                fillDict(events_that_changed,event,0)
                decaytype = GetDecayType(gen_tree1)
-               print name,hlt_tree1.path_index
-               #print dsmap1.GetBinContent(hlt_tree1.path_index)
-               fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path1[name],decaytype)
+               fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path[name],decaytype)
                
-
-
-
 
    #draw hists
    title = fired_rel0_not1_decayType_vs_dataset.GetName()
