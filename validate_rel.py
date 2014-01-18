@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from ROOT import TFile,TTree,TH2D
+from ROOT import TFile,TTree,TH2F, TCanvas
 
 def fillDict(tree,key,fillMany):
    if fillMany and tree.has_key(key):
@@ -44,8 +44,8 @@ def GetDecayType(gen_tree):
    return decay_type
 
 def main():
-   rel0 = '700pre9'
-   rel1 = '700pre10'
+   rel0 = '700pre10'
+   rel1 = '700pre10mod'
    output = open(rel0+'_'+rel1+'_compare_output.log',"w")
    outputA = open(rel0+'_'+rel1+'_compare_outputA.csv',"w")
    file0 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel0+'.root'
@@ -84,14 +84,49 @@ def main():
    path_accept1 = {'path' : 0}
    events_that_changed = {'event' : 0}
    dataset_v_path = {'path': 'dataset'}
+   datasetIDX_v_path0 = {'path': 0}
+   datasetIDX_v_path1 = {'path':0}
+   #make hists
+   fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",50,0,50,10,0,10)
+   fired_rel1_not0_decayType_vs_dataset= TH2F("fired_rel1_didntfire_rel0_decay_type_vs_datasets","fired_rel1_didntfire_rel0_decay_type_vs_datasets",50,0,50,10,0,10)
+   #set some bin labels
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(1,"Double Ele")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(2,"Double Mu")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(3,"Double Tau")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(4,"Ele + Mu")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(5,"Ele + Tau")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(6,"Mu + Tau")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(7,"Single Ele")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(8,"Single Mu")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(9,"Single Tau")
+   fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(10,"All Had")
+   fired_rel0_not1_decayType_vs_dataset.SetTitle("lost counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
+   fired_rel0_not1_decayType_vs_dataset.GetXaxis().LabelsOption("v")
+   fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetTitle("dataset")
+   fired_rel0_not1_decayType_vs_dataset.SetStats(0)
 
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(1,"Double Ele")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(2,"Double Mu")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(3,"Double Tau")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(4,"Ele + Mu")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(5,"Ele + Tau")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(6,"Mu + Tau")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(7,"Single Ele")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(8,"Single Mu")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(9,"Single Tau")
+   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(10,"All Had")
+   fired_rel1_not0_decayType_vs_dataset.SetTitle("lost counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
+   fired_rel1_not0_decayType_vs_dataset.GetXaxis().LabelsOption("v")
+   fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetTitle("dataset")
+   fired_rel1_not0_decayType_vs_dataset.SetStats(0)
+   
    #for ientry in xrange(1000000):
    for ientry in xrange(entries0):
       
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      #if ientry>10000:
+      #if ientry>100:
       #   break
 
       if hlt_tree0.event > evt0:
@@ -126,7 +161,11 @@ def main():
 
       gen_tree0.GetEntry(ientry)
       gen_tree1.GetEntry(ientry)
+      
+      if gen_tree0.event != gen_tree1.event:
+         print "gen tree events are not equal!!!!!!!!!!!!!!!!!!!!"
 
+      
       if proceed and hlt_tree0.event == hlt_tree1.event and hlt_tree0.path_name == hlt_tree1.path_name:#make sure events are matching
 
          hlt_tree0.GetEntry(ientry-diff0)
@@ -135,11 +174,20 @@ def main():
          event = hlt_tree0.event
          name = hlt_tree0.path_name[:hlt_tree0.path_name.find('\x00')]
          
-         dsmap = file_rel0.Get("newHLTOffline/map_of_trig_to_trig_types")
-         for ds in xrange(45):
-            if dsmap.GetBinContent(hlt_tree0.path_index,ds):
-               dataset_v_path[name] = dsmap.GetYaxis().GetBinLabel(ds)
-
+         dsmap0 = file_rel0.Get("newHLTOffline/map_of_trig_to_trig_types")
+         dsmap1 = file_rel1.Get("newHLTOffline/map_of_trig_to_trig_types")
+         for ds in xrange(1,51):
+            #print ds, dsmap1.GetBinContent(410,ds)
+            fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap0.GetYaxis().GetBinLabel(ds))
+            fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap1.GetYaxis().GetBinLabel(ds))
+            if dsmap0.GetBinContent(hlt_tree0.path_index,ds):
+               dataset_v_path[name] = dsmap0.GetYaxis().GetBinLabel(ds)
+               datasetIDX_v_path0[name] = ds
+            if dsmap1.GetBinContent(hlt_tree1.path_index,ds):
+               dataset_v_path[name] = dsmap0.GetYaxis().GetBinLabel(ds)
+               datasetIDX_v_path1[name] = ds
+               
+               
          if hlt_tree0.path_accept:
 
             fillDict(path_total_hits0,name,1)
@@ -149,7 +197,10 @@ def main():
                fillDict(event_fired0_not1,event,0)
                fillDict(path_fired0_not1,name,0)               
                fillDict(events_that_changed,event,0)
+               decaytype = GetDecayType(gen_tree0)
+               fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path0[name],decaytype)
 
+               
          if hlt_tree1.path_accept:
 
             fillDict(path_total_hits1,name,1)
@@ -159,6 +210,27 @@ def main():
                fillDict(event_fired1_not0,event,0)
                fillDict(path_fired1_not0,name,0)
                fillDict(events_that_changed,event,0)
+               decaytype = GetDecayType(gen_tree1)
+               print name,hlt_tree1.path_index
+               #print dsmap1.GetBinContent(hlt_tree1.path_index)
+               fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path1[name],decaytype)
+               
+
+
+
+
+   #draw hists
+   title = fired_rel0_not1_decayType_vs_dataset.GetName()
+   can1 = TCanvas(title,title)
+   fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
+   can1.SaveAs("decayType_vs_dataset_0not1.png")
+
+
+   title = fired_rel1_not0_decayType_vs_dataset.GetName()
+   can2 = TCanvas(title,title)
+   fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
+   can2.SaveAs("decayType_vs_dataset_1not0.png")
+
 
    sum_path_fired0_not1 = sum(path_fired0_not1.values())
    sum_path_fired1_not0 = sum(path_fired1_not0.values())
