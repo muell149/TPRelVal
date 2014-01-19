@@ -21,25 +21,25 @@ def GetDecayType(gen_tree):
          num_tau += 1
 
    if num_ele == 2:
-      decay_type = 0
-   elif num_mu == 2:
       decay_type = 1
-   elif num_tau == 2:
+   elif num_mu == 2:
       decay_type = 2
-   elif num_ele==1 and num_mu==1:
+   elif num_tau == 2:
       decay_type = 3
-   elif num_ele==1 and num_tau==1:
+   elif num_ele==1 and num_mu==1:
       decay_type = 4
-   elif num_mu==1 and num_tau==1:
+   elif num_ele==1 and num_tau==1:
       decay_type = 5
-   elif num_ele==1 and (num_mu+num_tau)==0:
+   elif num_mu==1 and num_tau==1:
       decay_type = 6
-   elif num_mu==1 and (num_ele+num_tau)==0:
+   elif num_ele==1 and (num_mu+num_tau)==0:
       decay_type = 7
-   elif num_tau==1 and (num_mu+num_ele)==0:
+   elif num_mu==1 and (num_ele+num_tau)==0:
       decay_type = 8
-   elif num_mu+num_ele+num_tau==0:
+   elif num_tau==1 and (num_mu+num_ele)==0:
       decay_type = 9
+   elif num_mu+num_ele+num_tau==0:
+      decay_type = 10
 
    return decay_type
 
@@ -127,8 +127,8 @@ def main():
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      if ientry>1000:
-         break
+      #if ientry>1000:
+      #   break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
