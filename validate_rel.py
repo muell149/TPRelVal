@@ -33,9 +33,9 @@ def GetDecayType(gen_tree):
    elif num_mu==1 and num_tau==1:
       decay_type = 6
    elif num_ele==1 and (num_mu+num_tau)==0:
-      decay_type = 7
+      decay_type = 7#6before
    elif num_mu==1 and (num_ele+num_tau)==0:
-      decay_type = 8
+      decay_type = 8 #7before
    elif num_tau==1 and (num_mu+num_ele)==0:
       decay_type = 9
    elif num_mu+num_ele+num_tau==0:
@@ -85,7 +85,7 @@ def main():
    events_that_changed = {'event' : 0}
    dataset_v_path = {'path': 'dataset'}
    datasetIDX_v_path = {'path': 0}
-   
+
    #make hists
    fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",50,0,50,10,0,10)
    fired_rel1_not0_decayType_vs_dataset= TH2F("fired_rel1_didntfire_rel0_decay_type_vs_datasets","fired_rel1_didntfire_rel0_decay_type_vs_datasets",50,0,50,10,0,10)
@@ -225,13 +225,13 @@ def main():
    can1 = TCanvas(title,title)
    fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
    can1.SaveAs("decayType_vs_dataset_0not1.png")
-
+   can1.SaveAs("decayType_vs_dataset_0not1.root")
 
    title = fired_rel1_not0_decayType_vs_dataset.GetName()
    can2 = TCanvas(title,title)
    fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
    can2.SaveAs("decayType_vs_dataset_1not0.png")
-
+   can2.SaveAs("decayType_vs_dataset_1not0.root")
 
    sum_path_fired0_not1 = sum(path_fired0_not1.values())
    sum_path_fired1_not0 = sum(path_fired1_not0.values())
@@ -257,11 +257,11 @@ def main():
    output.write(" \n")
    output.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
    output.write(" \n")
-   outputA.write("HLT PATH,counts in rel0,counts in rel1,difference\n")
+   outputA.write("HLT PATH,dataset,counts in rel0,counts in rel1,difference\n")
 
    for (keyA, counts) in path_total_hits0.items():
       if path_total_hits1.has_key(keyA) and abs(counts-path_total_hits1[keyA]) >= 1:
-         outputA.write("%(1)s, %(2)s, %(3)s, %(4)s\n"%{"1":keyA, "2":counts,"3":path_total_hits1[keyA],"4":counts-path_total_hits1[keyA]})
+         outputA.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s\n"%{"1":keyA, "2":dataset_v_path[keyA],"3":counts,"4":path_total_hits1[keyA],"5":counts-path_total_hits1[keyA]})
 
    output.close()
 
