@@ -115,7 +115,7 @@ def main():
    fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(8,"Single Mu")
    fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(9,"Single Tau")
    fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(10,"All Had")
-   fired_rel1_not0_decayType_vs_dataset.SetTitle("lost counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
+   fired_rel1_not0_decayType_vs_dataset.SetTitle("gained counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
    fired_rel1_not0_decayType_vs_dataset.GetXaxis().LabelsOption("v")
    fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetTitle("dataset")
    fired_rel1_not0_decayType_vs_dataset.SetStats(0)
