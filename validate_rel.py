@@ -44,8 +44,8 @@ def GetDecayType(gen_tree):
    return decay_type
 
 def main():
-   rel0 = '700pre10'
-   rel1 = '700pre10mod'
+   rel0 = '700pre7'
+   rel1 = '700pre8'
    output = open(rel0+'_'+rel1+'_compare_output.log',"w")
    outputA = open(rel0+'_'+rel1+'_compare_outputA.csv',"w")
    file0 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel0+'.root'
@@ -85,6 +85,7 @@ def main():
    events_that_changed = {'event' : 0}
    dataset_v_path = {'path': 'dataset'}
    datasetIDX_v_path = {'path': 0}
+   event_counts = {'event' :0} 
 
    #make hists
    fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",50,0,50,10,0,10)
@@ -127,8 +128,8 @@ def main():
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      #if ientry>1000:
-      #   break
+      if ientry>10000:
+         break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
@@ -198,7 +199,7 @@ def main():
 
             fillDict(path_total_hits0,name,1)
             fillDict(path_accept0,name,0)
-
+            fillDict(event_counts,event,0)
             if not hlt_tree1.path_accept:
                fillDict(event_fired0_not1,event,0)
                fillDict(path_fired0_not1,name,0)               
@@ -211,7 +212,7 @@ def main():
 
             fillDict(path_total_hits1,name,1)
             fillDict(path_accept1,name,0)
-
+            fillDict(event_counts,event,0)
             if not hlt_tree0.path_accept:
                fillDict(event_fired1_not0,event,0)
                fillDict(path_fired1_not0,name,0)
@@ -221,17 +222,17 @@ def main():
                
 
    #draw hists
-   title = fired_rel0_not1_decayType_vs_dataset.GetName()
-   can1 = TCanvas(title,title)
-   fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
-   can1.SaveAs("decayType_vs_dataset_0not1.png")
-   can1.SaveAs("decayType_vs_dataset_0not1.root")
+   #title = fired_rel0_not1_decayType_vs_dataset.GetName()
+   #can1 = TCanvas(title,title)
+   #fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
+   #can1.SaveAs("decayType_vs_dataset_0not1.png")
+   #can1.SaveAs("decayType_vs_dataset_0not1.root")
 
-   title = fired_rel1_not0_decayType_vs_dataset.GetName()
-   can2 = TCanvas(title,title)
-   fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
-   can2.SaveAs("decayType_vs_dataset_1not0.png")
-   can2.SaveAs("decayType_vs_dataset_1not0.root")
+   #title = fired_rel1_not0_decayType_vs_dataset.GetName()
+   #can2 = TCanvas(title,title)
+   #fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
+   #can2.SaveAs("decayType_vs_dataset_1not0.png")
+   #can2.SaveAs("decayType_vs_dataset_1not0.root")
 
    sum_path_fired0_not1 = sum(path_fired0_not1.values())
    sum_path_fired1_not0 = sum(path_fired1_not0.values())
@@ -240,7 +241,8 @@ def main():
    sum_path_accpt0 = sum(path_accept0.values())
    sum_path_accpt1 = sum(path_accept1.values())
    sum_changes = sum(events_that_changed.values())
-
+   sum_events = sum(event_counts.values())
+   print sum_events
    output.write("Events in rel0: %s\n"%evt0)
    output.write("Events in rel1: %s\n"%evt1)
    output.write("Paths in rel0: %s\n"%pidx0)
@@ -258,11 +260,13 @@ def main():
    output.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
    output.write(" \n")
    outputA.write("HLT PATH,dataset,counts in rel0,counts in rel1,difference\n")
-
+   sum_path_diffs = 0
    for (keyA, counts) in path_total_hits0.items():
       if path_total_hits1.has_key(keyA) and abs(counts-path_total_hits1[keyA]) >= 1:
+         sum_path_diffs += abs(counts-path_total_hits1[keyA])
          outputA.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s\n"%{"1":keyA, "2":dataset_v_path[keyA],"3":counts,"4":path_total_hits1[keyA],"5":counts-path_total_hits1[keyA]})
 
+   output.write("Fractional change in HLT path accepts from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_path_diffs/(sum_path_accpt0+sum_path_accpt1)})
    output.close()
 
             
