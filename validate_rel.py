@@ -33,9 +33,9 @@ def GetDecayType(gen_tree):
    elif num_mu==1 and num_tau==1:
       decay_type = 6
    elif num_ele==1 and (num_mu+num_tau)==0:
-      decay_type = 7#6before
+      decay_type = 7
    elif num_mu==1 and (num_ele+num_tau)==0:
-      decay_type = 8 #7before
+      decay_type = 8
    elif num_tau==1 and (num_mu+num_ele)==0:
       decay_type = 9
    elif num_mu+num_ele+num_tau==0:
@@ -43,9 +43,11 @@ def GetDecayType(gen_tree):
 
    return decay_type
 
-def main():
-   rel0 = '700pre7'
-   rel1 = '700pre8'
+#def main():
+if __name__=='__main__':
+   
+   rel0 = '700pre10'#'700pre9'
+   rel1 = '700pre10mod'#'700pre9_PV_constraint'
    output = open(rel0+'_'+rel1+'_compare_output.log',"w")
    outputA = open(rel0+'_'+rel1+'_compare_outputA.csv',"w")
    file0 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel0+'.root'
@@ -59,6 +61,9 @@ def main():
       
    entries0 = hlt_tree0.GetEntriesFast()
    entries1 = hlt_tree1.GetEntriesFast()
+
+   gen_entries0 = gen_tree0.GetEntriesFast()
+   gen_entries1 = gen_tree1.GetEntriesFast()
    
    output.write("Entries in tree0: %s\n"%entries0)
    output.write("Entries in tree1: %s\n"%entries1)
@@ -86,10 +91,12 @@ def main():
    dataset_v_path = {'path': 'dataset'}
    datasetIDX_v_path = {'path': 0}
    event_counts = {'event' :0} 
+   get_gen_entries0_from_event = {0:0} #event number : entry number
+   get_gen_entries1_from_event = {0:0}
 
    #make hists
-   fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",50,0,50,10,0,10)
-   fired_rel1_not0_decayType_vs_dataset= TH2F("fired_rel1_didntfire_rel0_decay_type_vs_datasets","fired_rel1_didntfire_rel0_decay_type_vs_datasets",50,0,50,10,0,10)
+   fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",43,0,43,10,0,10)
+   fired_rel1_not0_decayType_vs_dataset= TH2F("fired_rel1_didntfire_rel0_decay_type_vs_datasets","fired_rel1_didntfire_rel0_decay_type_vs_datasets",43,0,43,10,0,10)
    #set some bin labels
    fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(1,"Double Ele")
    fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(2,"Double Mu")
@@ -102,9 +109,11 @@ def main():
    fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(9,"Single Tau")
    fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(10,"All Had")
    fired_rel0_not1_decayType_vs_dataset.SetTitle("lost counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
-   fired_rel0_not1_decayType_vs_dataset.GetXaxis().LabelsOption("v")
-   fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetTitle("dataset")
+   #fired_rel0_not1_decayType_vs_dataset.GetXaxis().LabelsOption("v")
+   #fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetTitle("dataset")
+   fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetLabelSize(0.03)
    fired_rel0_not1_decayType_vs_dataset.SetStats(0)
+   
 
    fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(1,"Double Ele")
    fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(2,"Double Mu")
@@ -117,19 +126,26 @@ def main():
    fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(9,"Single Tau")
    fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(10,"All Had")
    fired_rel1_not0_decayType_vs_dataset.SetTitle("gained counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
-   fired_rel1_not0_decayType_vs_dataset.GetXaxis().LabelsOption("v")
-   fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetTitle("dataset")
+   #fired_rel1_not0_decayType_vs_dataset.GetXaxis().LabelsOption("v")
+   #fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetTitle("dataset")
+   fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetLabelSize(0.03)
    fired_rel1_not0_decayType_vs_dataset.SetStats(0)
    
    #for ientry in xrange(1000000):
-  
+
+   #apply gen matching
+   for genentry in xrange(gen_entries0):
+      gen_tree0.GetEntry(genentry)
+      get_gen_entries0_from_event[gen_tree0.event] = genentry
+
+        
    for ientry in xrange(entries0):
       
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      if ientry>10000:
-         break
+      #if ientry>10000:
+      #   break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
@@ -161,20 +177,29 @@ def main():
       #####################################################################################    
       #####################################################################################
 
-      gen_tree0.GetEntry(ientry)
-      gen_tree1.GetEntry(ientry)
+  #    gen_tree0.GetEntry(ientry)
+  #    gen_tree1.GetEntry(ientry)
       
-      if gen_tree0.event != gen_tree1.event:
-         print "WARNING: gen_tree events do not match!"
+  #    if gen_tree0.event != gen_tree1.event:
+  #       print "WARNING: gen_tree events do not match!"
 
       
       if proceed and hlt_tree0.event == hlt_tree1.event and hlt_tree0.path_name == hlt_tree1.path_name:#make sure events are matching
 
          hlt_tree0.GetEntry(ientry-diff0)
          hlt_tree1.GetEntry(ientry-diff1)
+         gen_tree0.GetEntry(ientry-diff0)
+         gen_tree1.GetEntry(ientry-diff1)
 
          event = hlt_tree0.event
          name = hlt_tree0.path_name[:hlt_tree0.path_name.find('\x00')]
+
+         gen_tree0.GetEntry(get_gen_entries0_from_event[event])
+         gen_tree1.GetEntry(get_gen_entries0_from_event[event])
+
+#         print hlt_tree0.event, gen_tree0.event
+#         print hlt_tree1.event, gen_tree1.event
+                      
 
 
 ###################### stuff for primary datasets ################
@@ -200,6 +225,8 @@ def main():
             fillDict(path_total_hits0,name,1)
             fillDict(path_accept0,name,0)
             fillDict(event_counts,event,0)
+            #decaytype = GetDecayType(gen_tree0)
+            #fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path[name],decaytype)
             if not hlt_tree1.path_accept:
                fillDict(event_fired0_not1,event,0)
                fillDict(path_fired0_not1,name,0)               
@@ -213,6 +240,8 @@ def main():
             fillDict(path_total_hits1,name,1)
             fillDict(path_accept1,name,0)
             fillDict(event_counts,event,0)
+            #decaytype = GetDecayType(gen_tree1)
+            #fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path[name],decaytype)
             if not hlt_tree0.path_accept:
                fillDict(event_fired1_not0,event,0)
                fillDict(path_fired1_not0,name,0)
@@ -222,16 +251,26 @@ def main():
                
 
    #draw hists
-   #title = fired_rel0_not1_decayType_vs_dataset.GetName()
-   #can1 = TCanvas(title,title)
-   #fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
-   #can1.SaveAs("decayType_vs_dataset_0not1.png")
+   title = fired_rel0_not1_decayType_vs_dataset.GetName()
+   can1 = TCanvas(title,title,1)
+   fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("X")
+   fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("Y")
+   fired_rel0_not1_decayType_vs_dataset.LabelsOption("v")
+   fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
+   can1.SetBottomMargin(0.19)
+   can1.SetGrid()
+   can1.SaveAs("decayType_vs_dataset_0not1.png")
    #can1.SaveAs("decayType_vs_dataset_0not1.root")
 
-   #title = fired_rel1_not0_decayType_vs_dataset.GetName()
-   #can2 = TCanvas(title,title)
-   #fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
-   #can2.SaveAs("decayType_vs_dataset_1not0.png")
+   title = fired_rel1_not0_decayType_vs_dataset.GetName()
+   can2 = TCanvas(title,title,1)
+   fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("X")
+   fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("Y")
+   fired_rel1_not0_decayType_vs_dataset.LabelsOption("v")
+   fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
+   can2.SetBottomMargin(0.19)
+   can2.SetGrid()
+   can2.SaveAs("decayType_vs_dataset_1not0.png")
    #can2.SaveAs("decayType_vs_dataset_1not0.root")
 
    sum_path_fired0_not1 = sum(path_fired0_not1.values())
@@ -242,7 +281,7 @@ def main():
    sum_path_accpt1 = sum(path_accept1.values())
    sum_changes = sum(events_that_changed.values())
    sum_events = sum(event_counts.values())
-   print sum_events
+   #print sum_events
    output.write("Events in rel0: %s\n"%evt0)
    output.write("Events in rel1: %s\n"%evt1)
    output.write("Paths in rel0: %s\n"%pidx0)
@@ -260,16 +299,16 @@ def main():
    output.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
    output.write(" \n")
    outputA.write("HLT PATH,dataset,counts in rel0,counts in rel1,difference\n")
-   sum_path_diffs = 0
+   #sum_path_diffs = 0
    for (keyA, counts) in path_total_hits0.items():
       if path_total_hits1.has_key(keyA) and abs(counts-path_total_hits1[keyA]) >= 1:
-         sum_path_diffs += abs(counts-path_total_hits1[keyA])
+         #sum_path_diffs += abs(counts-path_total_hits1[keyA])
          outputA.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s\n"%{"1":keyA, "2":dataset_v_path[keyA],"3":counts,"4":path_total_hits1[keyA],"5":counts-path_total_hits1[keyA]})
 
-   output.write("Fractional change in HLT path accepts from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_path_diffs/(sum_path_accpt0+sum_path_accpt1)})
+   #output.write("Fractional change in HLT path accepts from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_path_diffs/(sum_path_accpt0+sum_path_accpt1)})
    output.close()
 
             
 
-if __name__=='__main__':
-   main()
+#if __name__=='__main__':
+#   main()
