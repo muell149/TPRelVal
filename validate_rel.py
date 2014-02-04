@@ -151,8 +151,8 @@ if __name__=='__main__':
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      #if ientry>100000:
-      #   break
+      if ientry>100000:
+         break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
@@ -251,7 +251,7 @@ if __name__=='__main__':
    can1.SetBottomMargin(0.19)
    can1.SetGrid()
    can1.SaveAs("decayType_vs_dataset_0not1.png")
-   #can1.SaveAs("decayType_vs_dataset_0not1.root")
+   can1.SaveAs("decayType_vs_dataset_0not1.root")
 
    title = fired_rel1_not0_decayType_vs_dataset.GetName()
    can2 = TCanvas(title,title,1)
@@ -262,7 +262,7 @@ if __name__=='__main__':
    can2.SetBottomMargin(0.19)
    can2.SetGrid()
    can2.SaveAs("decayType_vs_dataset_1not0.png")
-   #can2.SaveAs("decayType_vs_dataset_1not0.root")
+   can2.SaveAs("decayType_vs_dataset_1not0.root")
 
    sum_path_fired0_not1 = sum(path_fired0_not1.values())
    sum_path_fired1_not0 = sum(path_fired1_not0.values())
