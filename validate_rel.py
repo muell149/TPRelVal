@@ -1,8 +1,8 @@
 #!/usr/bin/python
 from ROOT import TFile,TTree,TH2F, TCanvas
 
-def fillDict(tree,key,fillMany):
-   if fillMany and tree.has_key(key):
+def fillDict(tree,key):
+   if tree.has_key(key):
       tree[key] += 1
    else:
       tree[key] = 1
@@ -92,7 +92,6 @@ if __name__=='__main__':
    events_that_changed = {'event' : 0}
    dataset_v_path = {'path': 'dataset'}
    datasetIDX_v_path = {'path': 0}
-   event_counts = {'event' :0} 
    get_gen_entries0_from_event = {0:0} #event number : entry number
    get_gen_entries1_from_event = {0:0}
    modules_dict = {'path' : 'module'}
@@ -152,7 +151,7 @@ if __name__=='__main__':
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      #if ientry>10000:
+      #if ientry>100000:
       #   break
 
       if hlt_tree0.event > evt0:
@@ -219,14 +218,13 @@ if __name__=='__main__':
             
 
 
-            fillDict(path_total_hits0,name,1)
-            fillDict(path_accept0,name,0)
-            fillDict(event_counts,event,0)
+            fillDict(path_total_hits0,name)#######fill many
+            fillDict(path_accept0,name)
             modules_dict[name] = module
             if not hlt_tree1.path_accept:
-               fillDict(event_fired0_not1,event,0)
-               fillDict(path_fired0_not1,name,0)               
-               fillDict(events_that_changed,event,0)
+               fillDict(event_fired0_not1,event)
+               fillDict(path_fired0_not1,name)               
+               fillDict(events_that_changed,event)
                decaytype = GetDecayType(gen_tree0)
                fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
                #print "FILL 0not1 =====",datasetIDX_v_path[name],decaytype
@@ -234,15 +232,14 @@ if __name__=='__main__':
                
          if hlt_tree1.path_accept:
 
-            fillDict(path_total_hits1,name,1)
-            fillDict(path_accept1,name,0)
-            fillDict(event_counts,event,0)
+            fillDict(path_total_hits1,name)#fillmany
+            fillDict(path_accept1,name)
             modules_dict[name] = module
             
             if not hlt_tree0.path_accept:
-               fillDict(event_fired1_not0,event,0)
-               fillDict(path_fired1_not0,name,0)
-               fillDict(events_that_changed,event,0)
+               fillDict(event_fired1_not0,event)
+               fillDict(path_fired1_not0,name)
+               fillDict(events_that_changed,event)
                decaytype = GetDecayType(gen_tree1)
                fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
                outputB.write("%(1)s,%(2)s,%(3)s,0,1\n"%{"1":fired_rel1_not0_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
@@ -272,15 +269,18 @@ if __name__=='__main__':
    can2.SaveAs("decayType_vs_dataset_1not0.png")
    can2.SaveAs("decayType_vs_dataset_1not0.root")
 
-   sum_path_fired0_not1 = sum(path_fired0_not1.values())
-   sum_path_fired1_not0 = sum(path_fired1_not0.values())
-   sum_event_fired0_not1 = sum(event_fired0_not1.values())
-   sum_event_fired1_not0 = sum(event_fired1_not0.values())
-   sum_path_accpt0 = sum(path_accept0.values())
-   sum_path_accpt1 = sum(path_accept1.values())
-   sum_changes = sum(events_that_changed.values())
-   sum_events = sum(event_counts.values())
-   #print sum_events
+
+
+
+   print "THESE NUMBERS SHOULD MATCH"
+   sum_path_fired0_not1 = len(path_fired0_not1)-1
+   sum_path_fired1_not0 = len(path_fired1_not0)-1
+   sum_event_fired0_not1 = len(event_fired0_not1)-1
+   sum_event_fired1_not0 = len(event_fired1_not0)-1
+   sum_path_accpt0 = len(path_accept0)-1
+   sum_path_accpt1 = len(path_accept1)-1
+   sum_changes = len(events_that_changed)-1
+
    output.write("Events in rel0: %s\n"%evt0)
    output.write("Events in rel1: %s\n"%evt1)
    output.write("Paths in rel0: %s\n"%pidx0)
@@ -298,7 +298,9 @@ if __name__=='__main__':
    output.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
    output.write(" \n")
    outputA.write("HLT PATH,dataset,module,counts in rel0,counts in rel1,difference\n")
-   #sum_path_diffs = 0
+
+
+
    for (keyA, counts) in path_total_hits0.items():
       if not modules_dict.has_key(keyA):
          modules_dict[keyA] = "none"
