@@ -7,7 +7,7 @@ def fillDict(tree,key,fillMany):
    else:
       tree[key] = 1
    return tree
-
+ 
 def GetDecayType(gen_tree):
    num_ele=0
    num_mu=0
@@ -46,8 +46,8 @@ def GetDecayType(gen_tree):
 #def main():
 if __name__=='__main__':
    
-   rel0 = '700pre10'#'700pre9'
-   rel1 = '700pre10mod'#'700pre9_PV_constraint'
+   rel0 = '700pre10_highPU'
+   rel1 = '700pre10mod_highPU'
    output = open(rel0+'_'+rel1+'_compare_output.log',"w")
    outputA = open(rel0+'_'+rel1+'_compare_outputA.csv',"w")
    outputB = open('event_changes.csv',"w")
@@ -95,6 +95,7 @@ if __name__=='__main__':
    event_counts = {'event' :0} 
    get_gen_entries0_from_event = {0:0} #event number : entry number
    get_gen_entries1_from_event = {0:0}
+   modules_dict = {'path' : 'module'}
 
    #make hists
    fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",44,0,44,11,0,11)
@@ -151,8 +152,8 @@ if __name__=='__main__':
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      if ientry>100000:
-         break
+      #if ientry>10000:
+      #   break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
@@ -197,6 +198,8 @@ if __name__=='__main__':
          gen_tree0.GetEntry(get_gen_entries0_from_event[event])
          gen_tree1.GetEntry(get_gen_entries0_from_event[event])
 
+         module = hlt_tree0.last_module_with_saved_tags_label[:hlt_tree0.last_module_with_saved_tags_label.find('\x00')]
+                  
          if hlt_tree0.event != gen_tree0.event:
             print "Gen level mismatch!!!"
             break
@@ -213,10 +216,13 @@ if __name__=='__main__':
 ###################### stuff for primary datasets ################
                
          if hlt_tree0.path_accept:
+            
+
 
             fillDict(path_total_hits0,name,1)
             fillDict(path_accept0,name,0)
             fillDict(event_counts,event,0)
+            modules_dict[name] = module
             if not hlt_tree1.path_accept:
                fillDict(event_fired0_not1,event,0)
                fillDict(path_fired0_not1,name,0)               
@@ -231,6 +237,8 @@ if __name__=='__main__':
             fillDict(path_total_hits1,name,1)
             fillDict(path_accept1,name,0)
             fillDict(event_counts,event,0)
+            modules_dict[name] = module
+            
             if not hlt_tree0.path_accept:
                fillDict(event_fired1_not0,event,0)
                fillDict(path_fired1_not0,name,0)
@@ -289,12 +297,14 @@ if __name__=='__main__':
    output.write(" \n")
    output.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
    output.write(" \n")
-   outputA.write("HLT PATH,dataset,counts in rel0,counts in rel1,difference\n")
+   outputA.write("HLT PATH,dataset,module,counts in rel0,counts in rel1,difference\n")
    #sum_path_diffs = 0
    for (keyA, counts) in path_total_hits0.items():
+      if not modules_dict.has_key(keyA):
+         modules_dict[keyA] = "none"
       if path_total_hits1.has_key(keyA) and abs(counts-path_total_hits1[keyA]) >= 1:
          #sum_path_diffs += abs(counts-path_total_hits1[keyA])
-         outputA.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s\n"%{"1":keyA, "2":dataset_v_path[keyA],"3":counts,"4":path_total_hits1[keyA],"5":counts-path_total_hits1[keyA]})
+         outputA.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s, %(6)s\n"%{"1":keyA, "2":dataset_v_path[keyA],"3":modules_dict[keyA],"4":counts,"5":path_total_hits1[keyA],"6":counts-path_total_hits1[keyA]})
 
    #output.write("Fractional change in HLT path accepts from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_path_diffs/(sum_path_accpt0+sum_path_accpt1)})
    output.close()
