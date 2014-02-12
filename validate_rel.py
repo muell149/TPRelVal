@@ -1,10 +1,12 @@
 #!/usr/bin/python
 from ROOT import TFile,TTree,TH2F, TCanvas
+import time
+start_time = time.time()
 
 def fillDict(tree,key):
-   if tree.has_key(key):
+   try: 
       tree[key] += 1
-   else:
+   except KeyError:
       tree[key] = 1
    return tree
  
@@ -68,7 +70,7 @@ if __name__=='__main__':
    
    output_log.write("Entries in tree0: %s\n"%entries0)
    output_log.write("Entries in tree1: %s\n"%entries1)
-   output_event_changes.write("Decay Type, Dataset, Path, 0not1,1not0\n")
+   #output_event_changes.write("Decay Type, Dataset, Path, 0not1,1not0\n")
    
    #initialize some counters
    evt0 = 0
@@ -160,8 +162,8 @@ if __name__=='__main__':
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      #if ientry>100:#100000:
-      #   break
+      if ientry>100000:#100000:
+         break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
@@ -230,58 +232,58 @@ if __name__=='__main__':
             fillDict(path_total_hits0,name)#######fill many
             fillDict(path_accept0,name)
             modules_dict[name] = module
+
             if not hlt_tree1.path_accept:
                fillDict(event_fired0_not1,event)
                fillDict(path_fired0_not1,name)               
                fillDict(events_that_changed,event)
                decaytype = GetDecayType(gen_tree0)
                fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
-               output_event_changes.write("%(1)s,%(2)s,%(3)s,1,0\n"%{"1":fired_rel0_not1_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
-               fillDict(rel0not1_path_dict,name)
-               fillDict(rel0not1_ds_dict,dataset_v_path[name])
-               fillDict(rel0not1_dt_dict,decaytype)
+               #output_event_changes.write("%(1)s,%(2)s,%(3)s,1,0\n"%{"1":fired_rel0_not1_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
+               #fillDict(rel0not1_path_dict,name)
+               #fillDict(rel0not1_ds_dict,dataset_v_path[name])
+               #fillDict(rel0not1_dt_dict,decaytype)
                
          if hlt_tree1.path_accept:
 
             
             fillDict(path_total_hits1,name)#fillmany
             fillDict(path_accept1,name)
-            modules_dict[name] = module
-            
+                        
             if not hlt_tree0.path_accept:
                fillDict(event_fired1_not0,event)
                fillDict(path_fired1_not0,name)
                fillDict(events_that_changed,event)
                decaytype = GetDecayType(gen_tree1)
                fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
-               output_event_changes.write("%(1)s,%(2)s,%(3)s,0,1\n"%{"1":fired_rel1_not0_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
-               fillDict(rel1not0_path_dict,name)
-               fillDict(rel1not0_ds_dict,dataset_v_path[name])
-               fillDict(rel1not0_dt_dict,decaytype)
+               #output_event_changes.write("%(1)s,%(2)s,%(3)s,0,1\n"%{"1":fired_rel1_not0_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
+               #fillDict(rel1not0_path_dict,name)
+               #fillDict(rel1not0_ds_dict,dataset_v_path[name])
+               #fillDict(rel1not0_dt_dict,decaytype)
                
 
    #draw hists
-   title = fired_rel0_not1_decayType_vs_dataset.GetName()
-   can1 = TCanvas(title,title,1)
-   fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("X")
-   fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("Y")
-   fired_rel0_not1_decayType_vs_dataset.LabelsOption("v")
-   fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
-   can1.SetBottomMargin(0.19)
-   can1.SetGrid()
-   can1.SaveAs("decayType_vs_dataset_0not1.png")
-   can1.SaveAs("decayType_vs_dataset_0not1.root")
+#    title = fired_rel0_not1_decayType_vs_dataset.GetName()
+#    can1 = TCanvas(title,title,1)
+#    fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("X")
+#    fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("Y")
+#    fired_rel0_not1_decayType_vs_dataset.LabelsOption("v")
+#    fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
+#    can1.SetBottomMargin(0.19)
+#    can1.SetGrid()
+#    can1.SaveAs("decayType_vs_dataset_0not1.png")
+#    can1.SaveAs("decayType_vs_dataset_0not1.root")
 
-   title = fired_rel1_not0_decayType_vs_dataset.GetName()
-   can2 = TCanvas(title,title,1)
-   fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("X")
-   fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("Y")
-   fired_rel1_not0_decayType_vs_dataset.LabelsOption("v")
-   fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
-   can2.SetBottomMargin(0.19)
-   can2.SetGrid()
-   can2.SaveAs("decayType_vs_dataset_1not0.png")
-   can2.SaveAs("decayType_vs_dataset_1not0.root")
+#    title = fired_rel1_not0_decayType_vs_dataset.GetName()
+#    can2 = TCanvas(title,title,1)
+#    fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("X")
+#    fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("Y")
+#    fired_rel1_not0_decayType_vs_dataset.LabelsOption("v")
+#    fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
+#    can2.SetBottomMargin(0.19)
+#    can2.SetGrid()
+#    can2.SaveAs("decayType_vs_dataset_1not0.png")
+#    can2.SaveAs("decayType_vs_dataset_1not0.root")
 
    #make a list of all accepted paths
    for key0 in path_accept0.keys():
@@ -336,8 +338,8 @@ if __name__=='__main__':
 
    output_log.close()
    output_table.close()
-   output_event_changes.close()
-   
+   #output_event_changes.close()
+   print "Execution time = ", time.time()-start_time, " sec"
             
 
 #if __name__=='__main__':
