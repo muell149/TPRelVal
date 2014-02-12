@@ -48,9 +48,9 @@ if __name__=='__main__':
    
    rel0 = '700pre11'
    rel1 = '700pre12'
-   output = open(rel0+'_'+rel1+'_compare_output.log',"w")
-   outputA = open(rel0+'_'+rel1+'_compare_outputA.csv',"w")
-   outputB = open('event_changes.csv',"w")
+   output_log = open(rel0+'_'+rel1+'_compare_output.log',"w")
+   output_table = open(rel0+'_'+rel1+'_compare_output_table.csv',"w")
+   output_event_changes = open('event_changes.csv',"w")
    file0 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel0+'.root'
    file1 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel1+'.root'
    file_rel0 = TFile(file0)
@@ -66,9 +66,9 @@ if __name__=='__main__':
    gen_entries0 = gen_tree0.GetEntriesFast()
    gen_entries1 = gen_tree1.GetEntriesFast()
    
-   output.write("Entries in tree0: %s\n"%entries0)
-   output.write("Entries in tree1: %s\n"%entries1)
-   outputB.write("Decay Type, Dataset, Path, 0not1,1not0\n")
+   output_log.write("Entries in tree0: %s\n"%entries0)
+   output_log.write("Entries in tree1: %s\n"%entries1)
+   output_event_changes.write("Decay Type, Dataset, Path, 0not1,1not0\n")
    
    #initialize some counters
    evt0 = 0
@@ -203,10 +203,6 @@ if __name__=='__main__':
          event = hlt_tree0.event
          name = hlt_tree0.path_name[:hlt_tree0.path_name.find('\x00')]
 
-
-  #       if name != "HLT_PFJet80_v10":
-   #         continue
-
          gen_tree0.GetEntry(get_gen_entries0_from_event[event])
          gen_tree1.GetEntry(get_gen_entries0_from_event[event])
 
@@ -232,7 +228,6 @@ if __name__=='__main__':
             
             
             fillDict(path_total_hits0,name)#######fill many
-            #print "total_hits0 = ", path_total_hits0[name]
             fillDict(path_accept0,name)
             modules_dict[name] = module
             if not hlt_tree1.path_accept:
@@ -241,7 +236,7 @@ if __name__=='__main__':
                fillDict(events_that_changed,event)
                decaytype = GetDecayType(gen_tree0)
                fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
-               outputB.write("%(1)s,%(2)s,%(3)s,1,0\n"%{"1":fired_rel0_not1_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
+               output_event_changes.write("%(1)s,%(2)s,%(3)s,1,0\n"%{"1":fired_rel0_not1_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
                fillDict(rel0not1_path_dict,name)
                fillDict(rel0not1_ds_dict,dataset_v_path[name])
                fillDict(rel0not1_dt_dict,decaytype)
@@ -250,7 +245,6 @@ if __name__=='__main__':
 
             
             fillDict(path_total_hits1,name)#fillmany
-            #print "total_hits1 = ", path_total_hits1[name]
             fillDict(path_accept1,name)
             modules_dict[name] = module
             
@@ -260,7 +254,7 @@ if __name__=='__main__':
                fillDict(events_that_changed,event)
                decaytype = GetDecayType(gen_tree1)
                fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
-               outputB.write("%(1)s,%(2)s,%(3)s,0,1\n"%{"1":fired_rel1_not0_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
+               output_event_changes.write("%(1)s,%(2)s,%(3)s,0,1\n"%{"1":fired_rel1_not0_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
                fillDict(rel1not0_path_dict,name)
                fillDict(rel1not0_ds_dict,dataset_v_path[name])
                fillDict(rel1not0_dt_dict,decaytype)
@@ -305,23 +299,23 @@ if __name__=='__main__':
    sum_path_accpt1 = len(path_accept1)-1
    sum_changes = len(events_that_changed)-1
 
-   output.write("Events in rel0: %s\n"%evt0)
-   output.write("Events in rel1: %s\n"%evt1)
-   output.write("Paths in rel0: %s\n"%pidx0)
-   output.write("Paths in rel1: %s\n"%pidx1)
-   output.write("events with paths that fired in %(1)s and didnt fire in %(2)s : %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_event_fired0_not1}) 
-   output.write("events with paths that fired in %(1)s and didnt fire in %(2)s : %(3)s\n"%{"1":rel1,"2":rel0,"3":sum_event_fired1_not0})
-   output.write("# of paths accepted in %(1)s: %(2)s\n"%{"1":rel0,"2":sum_path_accpt0})
-   output.write("# of paths accepted in %(1)s: %(2)s\n"%{"1":rel1,"2":sum_path_accpt1})
-   output.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3": sum_path_fired0_not1})
-   output.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel1,"2":rel0,"3": sum_path_fired1_not0})
-   output.write("# of events that changed from %(1)s to %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_changes})
-   output.write("total # of events in %(1)s: %(2)s\n"%{"1":rel0,"2":entries0/(pidx0+1)})
-   output.write("total # of events in %(1)s: %(2)s\n"%{"1":rel1,"2":entries1/(pidx1+1)})
-   output.write(" \n")
-   output.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
-   output.write(" \n")
-   outputA.write("HLT PATH,dataset,module,total counts in rel0,total counts in rel1,change, absolute change, relative change,events firing rel0 not rel1, events firing rel1 not rel0, sum of changed events, change of event change, absolute event change\n")
+   output_log.write("Events in rel0: %s\n"%evt0)
+   output_log.write("Events in rel1: %s\n"%evt1)
+   output_log.write("Paths in rel0: %s\n"%pidx0)
+   output_log.write("Paths in rel1: %s\n"%pidx1)
+   output_log.write("events with paths that fired in %(1)s and didnt fire in %(2)s : %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_event_fired0_not1}) 
+   output_log.write("events with paths that fired in %(1)s and didnt fire in %(2)s : %(3)s\n"%{"1":rel1,"2":rel0,"3":sum_event_fired1_not0})
+   output_log.write("# of paths accepted in %(1)s: %(2)s\n"%{"1":rel0,"2":sum_path_accpt0})
+   output_log.write("# of paths accepted in %(1)s: %(2)s\n"%{"1":rel1,"2":sum_path_accpt1})
+   output_log.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3": sum_path_fired0_not1})
+   output_log.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel1,"2":rel0,"3": sum_path_fired1_not0})
+   output_log.write("# of events that changed from %(1)s to %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_changes})
+   output_log.write("total # of events in %(1)s: %(2)s\n"%{"1":rel0,"2":entries0/(pidx0+1)})
+   output_log.write("total # of events in %(1)s: %(2)s\n"%{"1":rel1,"2":entries1/(pidx1+1)})
+   output_log.write(" \n")
+   output_log.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
+   output_log.write(" \n")
+   output_table.write("HLT PATH,dataset,module,total counts in rel0,total counts in rel1,change, absolute change, relative change,events firing rel0 not rel1, events firing rel1 not rel0, sum of changed events, change of event change, absolute event change\n")
 
    for keyA in accepted_paths.keys():
       if not path_total_hits0.has_key(keyA):
@@ -338,12 +332,11 @@ if __name__=='__main__':
          rel0not1_path_dict[keyA] = 0
          
       if abs(path_total_hits0[keyA]-path_total_hits1[keyA]) > 0 or rel1not0_path_dict[keyA]+rel0not1_path_dict[keyA] > 0:
-         outputA.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s, %(6)s, %(7)s, %(8)s, %(9)s, %(10)s, %(11)s, %(12)s, %(13)s\n"%{"1":keyA, "2":dataset_v_path[keyA],"3":modules_dict[keyA],"4":path_total_hits0[keyA],"5":path_total_hits1[keyA],"6":path_total_hits1[keyA]-path_total_hits0[keyA], "7":abs(path_total_hits1[keyA]-path_total_hits0[keyA]),"8":abs(path_total_hits1[keyA]-path_total_hits0[keyA])/path_total_hits0[keyA],"9":rel0not1_path_dict[keyA],"10":rel1not0_path_dict[keyA],"11":rel0not1_path_dict[keyA]+rel1not0_path_dict[keyA],"12":rel1not0_path_dict[keyA]-rel0not1_path_dict[keyA],"13":abs(rel1not0_path_dict[keyA]-rel0not1_path_dict[keyA])})
+         output_table.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s, %(6)s, %(7)s, %(8)s, %(9)s, %(10)s, %(11)s, %(12)s, %(13)s\n"%{"1":keyA, "2":dataset_v_path[keyA],"3":modules_dict[keyA],"4":path_total_hits0[keyA],"5":path_total_hits1[keyA],"6":path_total_hits1[keyA]-path_total_hits0[keyA], "7":abs(path_total_hits1[keyA]-path_total_hits0[keyA]),"8":abs(path_total_hits1[keyA]-path_total_hits0[keyA])/path_total_hits0[keyA],"9":rel0not1_path_dict[keyA],"10":rel1not0_path_dict[keyA],"11":rel0not1_path_dict[keyA]+rel1not0_path_dict[keyA],"12":rel1not0_path_dict[keyA]-rel0not1_path_dict[keyA],"13":abs(rel1not0_path_dict[keyA]-rel0not1_path_dict[keyA])})
 
-   #output.write("Fractional change in HLT path accepts from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_path_diffs/(sum_path_accpt0+sum_path_accpt1)})
-   output.close()
-   outputA.close()
-   outputB.close()
+   output_log.close()
+   output_table.close()
+   output_event_changes.close()
    
             
 
