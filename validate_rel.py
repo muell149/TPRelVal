@@ -1,15 +1,16 @@
 #!/usr/bin/python
 from ROOT import TFile,TTree,TH2F, TCanvas
 import time
+
 start_time = time.time()
 
 def fillDict(tree,key):
-   try: 
+   try:
       tree[key] += 1
    except KeyError:
       tree[key] = 1
    return tree
- 
+
 def GetDecayType(gen_tree):
    num_ele=0
    num_mu=0
@@ -52,7 +53,7 @@ if __name__=='__main__':
    rel1 = '700pre12'
    output_log = open(rel0+'_'+rel1+'_compare_output.log',"w")
    output_table = open(rel0+'_'+rel1+'_compare_output_table.csv',"w")
-   output_event_changes = open('event_changes.csv',"w")
+   #output_event_changes = open('event_changes.csv',"w")
    file0 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel0+'.root'
    file1 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel1+'.root'
    file_rel0 = TFile(file0)
@@ -83,29 +84,28 @@ if __name__=='__main__':
    diff1 = 0
    proceed = True
    #initialize dicts
-   path_total_hits0 = {'paths' : 0}
-   path_total_hits1 = {'paths' : 0}  
-   path_fired0_not1 = {'paths' : 0}
-   path_fired1_not0 = {'paths' : 0}
-   event_fired0_not1 = {'event' : 0}
-   event_fired1_not0 = {'event' : 0}
-   path_accept0 = {'path' : 0}
-   path_accept1 = {'path' : 0}
+   #path_total_hits0 = {'paths' : 0}
+   #path_total_hits1 = {'paths' : 0}  
+   #path_fired0_not1 = {'paths' : 0}
+   #path_fired1_not0 = {'paths' : 0}
+   #event_fired0_not1 = {'event' : 0}
+   #event_fired1_not0 = {'event' : 0}
    accepted_paths = {'path':0}
-   events_that_changed = {'event' : 0}
-   dataset_v_path = {'path': 'dataset'}
+   #events_that_changed = {'event' : 0}
+   #dataset_v_path = {'path': 'dataset'}
    datasetIDX_v_path = {'path': 0}
    get_gen_entries0_from_event = {0:0} #event number : entry number
    get_gen_entries1_from_event = {0:0}
-   modules_dict = {'path' : 'module'}
-
-   rel0not1_path_dict = {'path':0}#dicts to keep track of when a path fires in rel0 and not in rel1
-   rel1not0_path_dict ={'path':0}
-   rel0not1_ds_dict = {'dataset':0}
-   rel1not0_ds_dict ={'dataset':0}
-   rel0not1_dt_dict = {'decay type':0}
-   rel1not0_dt_dict ={'decay type':0}
+   #modules_dict = {'path' : 'module'}
+      
+   #rel0not1_ds_dict = {'dataset':0}
+   #rel1not0_ds_dict ={'dataset':0}
+   #rel0not1_dt_dict = {'decay type':0}
+   #rel1not0_dt_dict ={'decay type':0}
    
+   path_num_dict = {}#{'path':['total_hits0','total_hits1','fired 0not1','fired 1not0',]}
+   path_str_dict = {}#{'path':['dataset','module']}
+   event_dict = {}#{'event':['changed','fired 0not1','fired 1not0']}
 
    #make hists
    fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",44,0,44,11,0,11)
@@ -151,10 +151,11 @@ if __name__=='__main__':
    num_PD = 43 #number of primary datsets - 1
    fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetBinLabel(num_PD,"NONE")#need to add these since some paths don't have a dataset
    fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetBinLabel(num_PD,"NONE")
+
    for ds in xrange(1,num_PD):
       fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap.GetYaxis().GetBinLabel(ds))
       fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap.GetYaxis().GetBinLabel(ds))
-      #print ds, dsmap.GetYaxis().GetBinLabel(ds)
+   
                   
 ############### event loop ################
    for ientry in xrange(entries0):
@@ -217,50 +218,60 @@ if __name__=='__main__':
 ###################### stuff for primary datasets ################
          for ds in xrange(1,num_PD):
             if dsmap.GetBinContent(hlt_tree0.path_index,ds):
-               dataset_v_path[name] = dsmap.GetYaxis().GetBinLabel(ds)
+               #dataset_v_path[name] = dsmap.GetYaxis().GetBinLabel(ds)
+               path_str_dict[name] = [dsmap.GetYaxis().GetBinLabel(ds),'']
                datasetIDX_v_path[name] = ds
         
-         if not dataset_v_path.has_key(name):#check to see if path has a PD, if not, add "NONE" 
-            dataset_v_path[name] = "NONE"
+         if not path_str_dict.has_key(name):#dataset_v_path.has_key(name):#check to see if path has a PD, if not, add "NONE" 
+            #dataset_v_path[name] = "NONE"
+            path_str_dict[name] = ["NONE",'']
             datasetIDX_v_path[name] = num_PD
 ###################### stuff for primary datasets ################
-               
-         if hlt_tree0.path_accept:
-            
-            
-            
-            fillDict(path_total_hits0,name)#######fill many
-            fillDict(path_accept0,name)
-            modules_dict[name] = module
 
+         path_str_dict[name][1] = module
+         if hlt_tree0.path_accept:
+            #fillDict(path_total_hits0,name)
+            #modules_dict[name] = module
+            try:
+               path_num_dict[name][0] += 1
+            except KeyError:
+               path_num_dict[name] = [1,0,0,0]
+                           
             if not hlt_tree1.path_accept:
-               fillDict(event_fired0_not1,event)
-               fillDict(path_fired0_not1,name)               
-               fillDict(events_that_changed,event)
+               #fillDict(event_fired0_not1,event)
+               #fillDict(path_fired0_not1,name)
+               #fillDict(events_that_changed,event)
+               
+               path_num_dict[name][2] += 1
+               try:
+                  event_dict[event][0] += 1
+                  event_dict[event][1] += 1
+               except KeyError:
+                  event_dict[event] = [1,1,0]
+                  
                decaytype = GetDecayType(gen_tree0)
                fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
                #output_event_changes.write("%(1)s,%(2)s,%(3)s,1,0\n"%{"1":fired_rel0_not1_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
-               #fillDict(rel0not1_path_dict,name)
-               #fillDict(rel0not1_ds_dict,dataset_v_path[name])
-               #fillDict(rel0not1_dt_dict,decaytype)
                
          if hlt_tree1.path_accept:
-
-            
-            fillDict(path_total_hits1,name)#fillmany
-            fillDict(path_accept1,name)
+            #fillDict(path_total_hits1,name)
+            path_num_dict[name][1] += 1
                         
             if not hlt_tree0.path_accept:
-               fillDict(event_fired1_not0,event)
-               fillDict(path_fired1_not0,name)
-               fillDict(events_that_changed,event)
+               #fillDict(event_fired1_not0,event)
+               #fillDict(path_fired1_not0,name)
+               path_num_dict[name][3] += 1
+               #fillDict(events_that_changed,event)
+               try:
+                  event_dict[event][0] += 1
+                  event_dict[event][2] += 1
+               except KeyError:
+                  event_dict[event] = [1,0,1]
                decaytype = GetDecayType(gen_tree1)
                fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
                #output_event_changes.write("%(1)s,%(2)s,%(3)s,0,1\n"%{"1":fired_rel1_not0_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
-               #fillDict(rel1not0_path_dict,name)
-               #fillDict(rel1not0_ds_dict,dataset_v_path[name])
-               #fillDict(rel1not0_dt_dict,decaytype)
-               
+
+                              
 
    #draw hists
 #    title = fired_rel0_not1_decayType_vs_dataset.GetName()
@@ -285,21 +296,22 @@ if __name__=='__main__':
 #    can2.SaveAs("decayType_vs_dataset_1not0.png")
 #    can2.SaveAs("decayType_vs_dataset_1not0.root")
 
-   #make a list of all accepted paths
-   for key0 in path_accept0.keys():
-      if not accepted_paths.has_key(key0):
-         accepted_paths[key0] = 1
-   for key1 in path_accept1.keys():
-      if not accepted_paths.has_key(key1):
-         accepted_paths[key1] = 1
+
+#    print len(path_fired0_not1)-1, len([arr[2] for arr in path_num_dict.values() if arr[2]!=0])  
+#    print len(path_fired1_not0)-1, len([arr[3] for arr in path_num_dict.values() if arr[3]!=0])
+#    print len(event_fired0_not1)-1, len([arr[1] for arr in event_dict.values() if arr[1]!=0])
+#    print len(event_fired1_not0)-1, len([arr[2] for arr in event_dict.values() if arr[2]!=0])
+#    print len(path_total_hits0)-1, len([arr[0] for arr in path_num_dict.values() if arr[0]!=0])
+#    print len(path_total_hits1)-1, len([arr[1] for arr in path_num_dict.values() if arr[1]!=0])
+#    print len(events_that_changed)-1, len([arr[0] for arr in event_dict.values() if arr[0]!=0])
    
-   sum_path_fired0_not1 = len(path_fired0_not1)-1
-   sum_path_fired1_not0 = len(path_fired1_not0)-1
-   sum_event_fired0_not1 = len(event_fired0_not1)-1
-   sum_event_fired1_not0 = len(event_fired1_not0)-1
-   sum_path_accpt0 = len(path_accept0)-1
-   sum_path_accpt1 = len(path_accept1)-1
-   sum_changes = len(events_that_changed)-1
+   sum_path_fired0_not1 = len([arr[2] for arr in path_num_dict.values() if arr[2]!=0])#len(path_fired0_not1)-1
+   sum_path_fired1_not0 = len([arr[3] for arr in path_num_dict.values() if arr[3]!=0])#len(path_fired1_not0)-1
+   sum_event_fired0_not1 = len([arr[1] for arr in event_dict.values() if arr[1]!=0])#len(event_fired0_not1)-1
+   sum_event_fired1_not0 = len([arr[2] for arr in event_dict.values() if arr[2]!=0])#len(event_fired1_not0)-1
+   sum_path_accpt0 = len([arr[0] for arr in path_num_dict.values() if arr[0]!=0])#len(path_total_hits0)-1
+   sum_path_accpt1 = len([arr[1] for arr in path_num_dict.values() if arr[1]!=0])#len(path_total_hits1)-1
+   sum_changes = len([arr[0] for arr in event_dict.values() if arr[0]!=0])#len(events_that_changed)-1
 
    output_log.write("Events in rel0: %s\n"%evt0)
    output_log.write("Events in rel1: %s\n"%evt1)
@@ -319,27 +331,35 @@ if __name__=='__main__':
    output_log.write(" \n")
    output_table.write("HLT PATH,dataset,module,total counts in rel0,total counts in rel1,change, absolute change, relative change,events firing rel0 not rel1, events firing rel1 not rel0, sum of changed events, change of event change, absolute event change\n")
 
-   for keyA in accepted_paths.keys():
-      if not path_total_hits0.has_key(keyA):
-         path_total_hits0[keyA] = 0
-      if not path_total_hits1.has_key(keyA):
-         path_total_hits1[keyA] = 0
-      if not modules_dict.has_key(keyA):
-         modules_dict[keyA] = "none"
-      if not path_total_hits1.has_key(keyA):
-         path_total_hits1[keyA] = 0
-      if not rel1not0_path_dict.has_key(keyA):
-         rel1not0_path_dict[keyA] = 0
-      if not rel0not1_path_dict.has_key(keyA):
-         rel0not1_path_dict[keyA] = 0
-         
-      if abs(path_total_hits0[keyA]-path_total_hits1[keyA]) > 0 or rel1not0_path_dict[keyA]+rel0not1_path_dict[keyA] > 0:
-         output_table.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s, %(6)s, %(7)s, %(8)s, %(9)s, %(10)s, %(11)s, %(12)s, %(13)s\n"%{"1":keyA, "2":dataset_v_path[keyA],"3":modules_dict[keyA],"4":path_total_hits0[keyA],"5":path_total_hits1[keyA],"6":path_total_hits1[keyA]-path_total_hits0[keyA], "7":abs(path_total_hits1[keyA]-path_total_hits0[keyA]),"8":abs(path_total_hits1[keyA]-path_total_hits0[keyA])/path_total_hits0[keyA],"9":rel0not1_path_dict[keyA],"10":rel1not0_path_dict[keyA],"11":rel0not1_path_dict[keyA]+rel1not0_path_dict[keyA],"12":rel1not0_path_dict[keyA]-rel0not1_path_dict[keyA],"13":abs(rel1not0_path_dict[keyA]-rel0not1_path_dict[keyA])})
+
+#    for key0 in path_total_hits0.keys():
+#       if not accepted_paths.has_key(key0):
+#          accepted_paths[key0] = 1
+#    for key1 in path_total_hits1.keys():
+#       if not accepted_paths.has_key(key1):
+#          accepted_paths[key1] = 1
+
+   for key in path_num_dict.keys(): #accepted_paths.keys():
+      # if not path_total_hits0.has_key(keyA):
+#          path_total_hits0[keyA] = 0
+#       if not path_total_hits1.has_key(keyA):
+#          path_total_hits1[keyA] = 0
+#       if not modules_dict.has_key(keyA):
+#          modules_dict[keyA] = "none"
+#       if not path_total_hits1.has_key(keyA):
+#          path_total_hits1[keyA] = 0
+#       if not path_fired1_not0.has_key(keyA):
+#          path_fired1_not0[keyA] = 0
+#       if not path_fired0_not1.has_key(keyA):
+#          path_fired0_not1[keyA] = 0
+  
+      if abs(path_num_dict[key][0]-path_num_dict[key][1]) > 0 or path_num_dict[key][3]+path_num_dict[key][2] > 0:
+         output_table.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s, %(6)s, %(7)s, %(8)s, %(9)s, %(10)s, %(11)s, %(12)s, %(13)s\n"%{"1":key, "2":path_str_dict[key][0],"3":path_str_dict[key][1],"4":path_num_dict[key][0],"5":path_num_dict[key][1],"6":path_num_dict[key][1]-path_num_dict[key][0], "7":abs(path_num_dict[key][1]-path_num_dict[key][0]),"8":abs(path_num_dict[key][1]-path_num_dict[key][0])/path_num_dict[key][0],"9":path_num_dict[key][2],"10":path_num_dict[key][3],"11":path_num_dict[key][2]+path_num_dict[key][3],"12":path_num_dict[key][3]-path_num_dict[key][2],"13":abs(path_num_dict[key][3]-path_num_dict[key][2])})
 
    output_log.close()
    output_table.close()
    #output_event_changes.close()
-   print "Execution time = ", time.time()-start_time, " sec"
+   print "Execution time = ", time.time()-start_time," sec"
             
 
 #if __name__=='__main__':
