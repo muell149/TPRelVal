@@ -1,15 +1,8 @@
 #!/usr/bin/python
 from ROOT import TFile,TTree,TH2F, TCanvas
 import time
-
+ 
 start_time = time.time()
-
-def fillDict(tree,key):
-   try:
-      tree[key] += 1
-   except KeyError:
-      tree[key] = 1
-   return tree
 
 def GetDecayType(gen_tree):
    num_ele=0
@@ -84,20 +77,10 @@ if __name__=='__main__':
    diff1 = 0
    proceed = True
    #initialize dicts
-   #path_total_hits0 = {'paths' : 0}
-   #path_total_hits1 = {'paths' : 0}  
-   #path_fired0_not1 = {'paths' : 0}
-   #path_fired1_not0 = {'paths' : 0}
-   #event_fired0_not1 = {'event' : 0}
-   #event_fired1_not0 = {'event' : 0}
    accepted_paths = {'path':0}
-   #events_that_changed = {'event' : 0}
-   #dataset_v_path = {'path': 'dataset'}
    datasetIDX_v_path = {'path': 0}
    get_gen_entries0_from_event = {0:0} #event number : entry number
    get_gen_entries1_from_event = {0:0}
-   #modules_dict = {'path' : 'module'}
-      
    #rel0not1_ds_dict = {'dataset':0}
    #rel1not0_ds_dict ={'dataset':0}
    #rel0not1_dt_dict = {'decay type':0}
@@ -107,9 +90,11 @@ if __name__=='__main__':
    path_str_dict = {}#{'path':['dataset','module']}
    event_dict = {}#{'event':['changed','fired 0not1','fired 1not0']}
 
+   #big_dict_list = [{} for i in range(10)]
+
    #make hists
    fired_rel0_not1_decayType_vs_dataset = TH2F("fired_rel0_didntfire_rel1_decay_type_vs_datasets","fired_rel0_didntfire_rel1_decay_type_vs_datasets",44,0,44,11,0,11)
-   fired_rel1_not0_decayType_vs_dataset= TH2F("fired_rel1_didntfire_rel0_decay_type_vs_datasets","fired_rel1_didntfire_rel0_decay_type_vs_datasets",44,0,44,11,0,11)
+   #fired_rel1_not0_decayType_vs_dataset= TH2F("fired_rel1_didntfire_rel0_decay_type_vs_datasets","fired_rel1_didntfire_rel0_decay_type_vs_datasets",44,0,44,11,0,11)
    #set some bin labels
    fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(1,"Double Ele")
    fired_rel0_not1_decayType_vs_dataset.GetYaxis().SetBinLabel(2,"Double Mu")
@@ -124,23 +109,7 @@ if __name__=='__main__':
    fired_rel0_not1_decayType_vs_dataset.SetTitle("lost counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
    fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetLabelSize(0.03)
    fired_rel0_not1_decayType_vs_dataset.SetStats(0)
-   
-
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(1,"Double Ele")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(2,"Double Mu")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(3,"Double Tau")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(4,"Ele + Mu")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(5,"Ele + Tau")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(6,"Mu + Tau")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(7,"Single Ele")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(8,"Single Mu")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(9,"Single Tau")
-   fired_rel1_not0_decayType_vs_dataset.GetYaxis().SetBinLabel(10,"All Had")
-   fired_rel1_not0_decayType_vs_dataset.SetTitle("gained counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
-   fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetLabelSize(0.03)
-   fired_rel1_not0_decayType_vs_dataset.SetStats(0)
-   
-
+      
    #apply gen matching
    for genentry in xrange(gen_entries0):
       gen_tree0.GetEntry(genentry)
@@ -150,21 +119,23 @@ if __name__=='__main__':
    dsmap = file_rel0.Get("newHLTOffline/map_of_trig_to_trig_types")
    num_PD = 43 #number of primary datsets - 1
    fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetBinLabel(num_PD,"NONE")#need to add these since some paths don't have a dataset
-   fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetBinLabel(num_PD,"NONE")
-
+   
    for ds in xrange(1,num_PD):
       fired_rel0_not1_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap.GetYaxis().GetBinLabel(ds))
-      fired_rel1_not0_decayType_vs_dataset.GetXaxis().SetBinLabel(ds,dsmap.GetYaxis().GetBinLabel(ds))
-   
-                  
+
+   #clone histogram for gained counts
+   fired_rel1_not0_decayType_vs_dataset = fired_rel0_not1_decayType_vs_dataset.Clone()
+   fired_rel1_not0_decayType_vs_dataset.SetName("fired_rel1_didntfire_rel0_decay_type_vs_datasets")
+   fired_rel1_not0_decayType_vs_dataset.SetTitle("gained counts going from " + rel0 + " to " + rel1 + ", ttbar decay vs dataset")
+
 ############### event loop ################
    for ientry in xrange(entries0):
       
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      #if ientry>100000:#100000:
-      #   break
+      if ientry>1000:#100000:
+         break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
@@ -218,100 +189,83 @@ if __name__=='__main__':
 ###################### stuff for primary datasets ################
          for ds in xrange(1,num_PD):
             if dsmap.GetBinContent(hlt_tree0.path_index,ds):
-               #dataset_v_path[name] = dsmap.GetYaxis().GetBinLabel(ds)
                path_str_dict[name] = [dsmap.GetYaxis().GetBinLabel(ds),'']
                datasetIDX_v_path[name] = ds
         
-         if not path_str_dict.has_key(name):#dataset_v_path.has_key(name):#check to see if path has a PD, if not, add "NONE" 
-            #dataset_v_path[name] = "NONE"
+         if not path_str_dict.has_key(name):#check to see if path has a PD, if not, add "NONE" 
             path_str_dict[name] = ["NONE",'']
             datasetIDX_v_path[name] = num_PD
 ###################### stuff for primary datasets ################
 
          path_str_dict[name][1] = module
+         decaytype1 = GetDecayType(gen_tree0)
+         decaytype2 = GetDecayType(gen_tree1)
+         if decaytype1 != decaytype2:
+            print "THE DECAY TYPES DO NOT MATCH UGHHHHHHH"
+         
+         
          if hlt_tree0.path_accept:
-            #fillDict(path_total_hits0,name)
-            #modules_dict[name] = module
             try:
                path_num_dict[name][0] += 1
             except KeyError:
                path_num_dict[name] = [1,0,0,0]
                            
             if not hlt_tree1.path_accept:
-               #fillDict(event_fired0_not1,event)
-               #fillDict(path_fired0_not1,name)
-               #fillDict(events_that_changed,event)
-               
                path_num_dict[name][2] += 1
                try:
                   event_dict[event][0] += 1
                   event_dict[event][1] += 1
                except KeyError:
                   event_dict[event] = [1,1,0]
-                  
                decaytype = GetDecayType(gen_tree0)
                fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
                #output_event_changes.write("%(1)s,%(2)s,%(3)s,1,0\n"%{"1":fired_rel0_not1_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
                
          if hlt_tree1.path_accept:
-            #fillDict(path_total_hits1,name)
             path_num_dict[name][1] += 1
                         
             if not hlt_tree0.path_accept:
-               #fillDict(event_fired1_not0,event)
-               #fillDict(path_fired1_not0,name)
                path_num_dict[name][3] += 1
-               #fillDict(events_that_changed,event)
                try:
                   event_dict[event][0] += 1
                   event_dict[event][2] += 1
                except KeyError:
                   event_dict[event] = [1,0,1]
-               decaytype = GetDecayType(gen_tree1)
                fired_rel1_not0_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
                #output_event_changes.write("%(1)s,%(2)s,%(3)s,0,1\n"%{"1":fired_rel1_not0_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
 
                               
 
    #draw hists
-#    title = fired_rel0_not1_decayType_vs_dataset.GetName()
-#    can1 = TCanvas(title,title,1)
-#    fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("X")
-#    fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("Y")
-#    fired_rel0_not1_decayType_vs_dataset.LabelsOption("v")
-#    fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
-#    can1.SetBottomMargin(0.19)
-#    can1.SetGrid()
-#    can1.SaveAs("decayType_vs_dataset_0not1.png")
-#    can1.SaveAs("decayType_vs_dataset_0not1.root")
+   title = fired_rel0_not1_decayType_vs_dataset.GetName()
+   can1 = TCanvas(title,title,1)
+   fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("X")
+   fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("Y")
+   fired_rel0_not1_decayType_vs_dataset.LabelsOption("v")
+   fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
+   can1.SetBottomMargin(0.19)
+   can1.SetGrid()
+   can1.SaveAs("decayType_vs_dataset_0not1.png")
+   can1.SaveAs("decayType_vs_dataset_0not1.root")
 
-#    title = fired_rel1_not0_decayType_vs_dataset.GetName()
-#    can2 = TCanvas(title,title,1)
-#    fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("X")
-#    fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("Y")
-#    fired_rel1_not0_decayType_vs_dataset.LabelsOption("v")
-#    fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
-#    can2.SetBottomMargin(0.19)
-#    can2.SetGrid()
-#    can2.SaveAs("decayType_vs_dataset_1not0.png")
-#    can2.SaveAs("decayType_vs_dataset_1not0.root")
-
-
-#    print len(path_fired0_not1)-1, len([arr[2] for arr in path_num_dict.values() if arr[2]!=0])  
-#    print len(path_fired1_not0)-1, len([arr[3] for arr in path_num_dict.values() if arr[3]!=0])
-#    print len(event_fired0_not1)-1, len([arr[1] for arr in event_dict.values() if arr[1]!=0])
-#    print len(event_fired1_not0)-1, len([arr[2] for arr in event_dict.values() if arr[2]!=0])
-#    print len(path_total_hits0)-1, len([arr[0] for arr in path_num_dict.values() if arr[0]!=0])
-#    print len(path_total_hits1)-1, len([arr[1] for arr in path_num_dict.values() if arr[1]!=0])
-#    print len(events_that_changed)-1, len([arr[0] for arr in event_dict.values() if arr[0]!=0])
+   title = fired_rel1_not0_decayType_vs_dataset.GetName()
+   can2 = TCanvas(title,title,1)
+   fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("X")
+   fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("Y")
+   fired_rel1_not0_decayType_vs_dataset.LabelsOption("v")
+   fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
+   can2.SetBottomMargin(0.19)
+   can2.SetGrid()
+   can2.SaveAs("decayType_vs_dataset_1not0.png")
+   can2.SaveAs("decayType_vs_dataset_1not0.root")
    
-   sum_path_fired0_not1 = len([arr[2] for arr in path_num_dict.values() if arr[2]!=0])#len(path_fired0_not1)-1
-   sum_path_fired1_not0 = len([arr[3] for arr in path_num_dict.values() if arr[3]!=0])#len(path_fired1_not0)-1
-   sum_event_fired0_not1 = len([arr[1] for arr in event_dict.values() if arr[1]!=0])#len(event_fired0_not1)-1
-   sum_event_fired1_not0 = len([arr[2] for arr in event_dict.values() if arr[2]!=0])#len(event_fired1_not0)-1
-   sum_path_accpt0 = len([arr[0] for arr in path_num_dict.values() if arr[0]!=0])#len(path_total_hits0)-1
-   sum_path_accpt1 = len([arr[1] for arr in path_num_dict.values() if arr[1]!=0])#len(path_total_hits1)-1
-   sum_changes = len([arr[0] for arr in event_dict.values() if arr[0]!=0])#len(events_that_changed)-1
+   sum_path_fired0_not1 = len([arr[2] for arr in path_num_dict.values() if arr[2]!=0])
+   sum_path_fired1_not0 = len([arr[3] for arr in path_num_dict.values() if arr[3]!=0])
+   sum_event_fired0_not1 = len([arr[1] for arr in event_dict.values() if arr[1]!=0])
+   sum_event_fired1_not0 = len([arr[2] for arr in event_dict.values() if arr[2]!=0])
+   sum_path_accpt0 = len([arr[0] for arr in path_num_dict.values() if arr[0]!=0])
+   sum_path_accpt1 = len([arr[1] for arr in path_num_dict.values() if arr[1]!=0])
+   sum_changes = len([arr[0] for arr in event_dict.values() if arr[0]!=0])
 
    output_log.write("Events in rel0: %s\n"%evt0)
    output_log.write("Events in rel1: %s\n"%evt1)
@@ -328,35 +282,17 @@ if __name__=='__main__':
    output_log.write("total # of events in %(1)s: %(2)s\n"%{"1":rel1,"2":entries1/(pidx1+1)})
    output_log.write(" \n")
    output_log.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
-   output_log.write(" \n")
+   exectime = time.time()-start_time
+   output_log.write("Exectution time = %f\n"%exectime)
+   output_log.close()
    output_table.write("HLT PATH,dataset,module,total counts in rel0,total counts in rel1,change, absolute change, relative change,events firing rel0 not rel1, events firing rel1 not rel0, sum of changed events, change of event change, absolute event change\n")
 
 
-#    for key0 in path_total_hits0.keys():
-#       if not accepted_paths.has_key(key0):
-#          accepted_paths[key0] = 1
-#    for key1 in path_total_hits1.keys():
-#       if not accepted_paths.has_key(key1):
-#          accepted_paths[key1] = 1
-
-   for key in path_num_dict.keys(): #accepted_paths.keys():
-      # if not path_total_hits0.has_key(keyA):
-#          path_total_hits0[keyA] = 0
-#       if not path_total_hits1.has_key(keyA):
-#          path_total_hits1[keyA] = 0
-#       if not modules_dict.has_key(keyA):
-#          modules_dict[keyA] = "none"
-#       if not path_total_hits1.has_key(keyA):
-#          path_total_hits1[keyA] = 0
-#       if not path_fired1_not0.has_key(keyA):
-#          path_fired1_not0[keyA] = 0
-#       if not path_fired0_not1.has_key(keyA):
-#          path_fired0_not1[keyA] = 0
-  
+   
+   for key in path_num_dict.keys(): 
       if abs(path_num_dict[key][0]-path_num_dict[key][1]) > 0 or path_num_dict[key][3]+path_num_dict[key][2] > 0:
          output_table.write("%(1)s, %(2)s, %(3)s, %(4)s, %(5)s, %(6)s, %(7)s, %(8)s, %(9)s, %(10)s, %(11)s, %(12)s, %(13)s\n"%{"1":key, "2":path_str_dict[key][0],"3":path_str_dict[key][1],"4":path_num_dict[key][0],"5":path_num_dict[key][1],"6":path_num_dict[key][1]-path_num_dict[key][0], "7":abs(path_num_dict[key][1]-path_num_dict[key][0]),"8":abs(path_num_dict[key][1]-path_num_dict[key][0])/path_num_dict[key][0],"9":path_num_dict[key][2],"10":path_num_dict[key][3],"11":path_num_dict[key][2]+path_num_dict[key][3],"12":path_num_dict[key][3]-path_num_dict[key][2],"13":abs(path_num_dict[key][3]-path_num_dict[key][2])})
 
-   output_log.close()
    output_table.close()
    #output_event_changes.close()
    print "Execution time = ", time.time()-start_time," sec"
