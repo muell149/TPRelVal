@@ -42,8 +42,8 @@ def GetDecayType(gen_tree):
 #def main():
 if __name__=='__main__':
    
-   rel0 = '700pre11'
-   rel1 = '700pre12'
+   rel0 = '700pre10'
+   rel1 = '700pre11'
    output_log = open(rel0+'_'+rel1+'_compare_output.log',"w")
    output_table = open(rel0+'_'+rel1+'_compare_output_table.csv',"w")
    #output_event_changes = open('event_changes.csv',"w")
@@ -134,8 +134,8 @@ if __name__=='__main__':
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
 
-      if ientry>1000:#100000:
-         break
+      #if ientry>1000:#100000:
+      #   break
 
       if hlt_tree0.event > evt0:
          evt0 = hlt_tree0.event
@@ -198,12 +198,8 @@ if __name__=='__main__':
 ###################### stuff for primary datasets ################
 
          path_str_dict[name][1] = module
-         decaytype1 = GetDecayType(gen_tree0)
-         decaytype2 = GetDecayType(gen_tree1)
-         if decaytype1 != decaytype2:
-            print "THE DECAY TYPES DO NOT MATCH UGHHHHHHH"
-         
-         
+         decaytype = GetDecayType(gen_tree0)
+                  
          if hlt_tree0.path_accept:
             try:
                path_num_dict[name][0] += 1
@@ -217,13 +213,15 @@ if __name__=='__main__':
                   event_dict[event][1] += 1
                except KeyError:
                   event_dict[event] = [1,1,0]
-               decaytype = GetDecayType(gen_tree0)
                fired_rel0_not1_decayType_vs_dataset.Fill(datasetIDX_v_path[name]-1,decaytype-1)
                #output_event_changes.write("%(1)s,%(2)s,%(3)s,1,0\n"%{"1":fired_rel0_not1_decayType_vs_dataset.GetYaxis().GetBinLabel(decaytype),"2":dataset_v_path[name],"3":name})
                
          if hlt_tree1.path_accept:
-            path_num_dict[name][1] += 1
-                        
+            try:
+               path_num_dict[name][1] += 1
+            except KeyError:
+               path_num_dict[name] = [0,1,0,0]
+               
             if not hlt_tree0.path_accept:
                path_num_dict[name][3] += 1
                try:
@@ -236,28 +234,34 @@ if __name__=='__main__':
 
                               
 
+
+
+               
    #draw hists
-   title = fired_rel0_not1_decayType_vs_dataset.GetName()
-   can1 = TCanvas(title,title,1)
+   hist_file = TFile("hist_file_"+rel0+"_"+rel1+".root","recreate")
+   #title = fired_rel0_not1_decayType_vs_dataset.GetName()
+   #can1 = TCanvas(title,title,1)
    fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("X")
    fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("Y")
    fired_rel0_not1_decayType_vs_dataset.LabelsOption("v")
-   fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
-   can1.SetBottomMargin(0.19)
-   can1.SetGrid()
-   can1.SaveAs("decayType_vs_dataset_0not1.png")
-   can1.SaveAs("decayType_vs_dataset_0not1.root")
+   fired_rel0_not1_decayType_vs_dataset.SetOption("COLZ")
+   fired_rel0_not1_decayType_vs_dataset.Write()
+   #can1.SetBottomMargin(0.19)
+   #can1.SetGrid()
+   #can1.SaveAs("decayType_vs_dataset_0not1.png")
+   #can1.SaveAs("decayType_vs_dataset_0not1.root")
 
-   title = fired_rel1_not0_decayType_vs_dataset.GetName()
-   can2 = TCanvas(title,title,1)
+   ##title = fired_rel1_not0_decayType_vs_dataset.GetName()
+   #can2 = TCanvas(title,title,1)
    fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("X")
    fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("Y")
    fired_rel1_not0_decayType_vs_dataset.LabelsOption("v")
-   fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
-   can2.SetBottomMargin(0.19)
-   can2.SetGrid()
-   can2.SaveAs("decayType_vs_dataset_1not0.png")
-   can2.SaveAs("decayType_vs_dataset_1not0.root")
+   fired_rel1_not0_decayType_vs_dataset.SetOption("COLZ")
+   fired_rel1_not0_decayType_vs_dataset.Write()
+   #can2.SetBottomMargin(0.19)
+   #can2.SetGrid()
+   #can2.SaveAs("decayType_vs_dataset_1not0.png")
+   #can2.SaveAs("decayType_vs_dataset_1not0.root")
    
    sum_path_fired0_not1 = len([arr[2] for arr in path_num_dict.values() if arr[2]!=0])
    sum_path_fired1_not0 = len([arr[3] for arr in path_num_dict.values() if arr[3]!=0])
@@ -296,7 +300,6 @@ if __name__=='__main__':
    output_table.close()
    #output_event_changes.close()
    print "Execution time = ", time.time()-start_time," sec"
-            
 
 #if __name__=='__main__':
 #   main()
