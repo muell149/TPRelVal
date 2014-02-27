@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from ROOT import TFile,TTree,TH2F, TCanvas
-import time, array
+import sys, time, array, subprocess, commands
  
 start_time = time.time()
 
@@ -51,26 +51,38 @@ def GetDecayType(gen_tree):
 #def main():
 if __name__=='__main__':
    
-   rel0 = '700pre10'
-   rel1 = '700pre11'
-   output_log = open(rel0+'_'+rel1+'_compare_output.log',"w")
+   rel0 = '700pre11'
+   rel1 = '700pre13'
+   output_file_dir = '/afs/cern.ch/user/m/muell149/steam_validation/'+rel0+'_'+rel1+'/'
+   #output_file_dir = ''
 
-   output_table = open(rel0+'_'+rel1+'_compare_output_table.csv',"w")
-   output_DoubleEle = open('DoubleEle.csv',"w")
-   output_DoubleMu = open('DoubleMu.csv',"w")
-   output_DoubleTau = open('DoubleTau.csv',"w")
-   output_EleMu = open('EleMu.csv',"w")
-   output_EleTau = open('EleTau.csv',"w")
-   output_MuTau = open('EleTau.csv',"w")
-   output_SingleEle = open('SingleEle.csv',"w")
-   output_SingleMu = open('SingleMu.csv',"w")
-   output_SingleTau = open('SingleTau.csv',"w")
-   output_AllHad = open('AllHad.csv',"w")
+   
+#   if commands.getstatusoutput("mkdir "+output_file_dir)[0] != 0:
+#      ow = raw_input('output directory '+output_file_dir+' already exists, overwrite? (y/n):')
+#      if ow == 'y':
+#         subprocess.call("mkdir "+output_file_dir,shell=True)
+#      else:
+#         sys.exit()
+
+   subprocess.call("mkdir "+output_file_dir,shell=True)
+   output_log = open(output_file_dir+rel0+'_'+rel1+'_compare_output.log',"w")
+
+   output_table = open(output_file_dir+rel0+'_'+rel1+'_compare_output_table.csv',"w")
+   output_DoubleEle = open(output_file_dir+'DoubleEle.csv',"w")
+   output_DoubleMu = open(output_file_dir+'DoubleMu.csv',"w")
+   output_DoubleTau = open(output_file_dir+'DoubleTau.csv',"w")
+   output_EleMu = open(output_file_dir+'EleMu.csv',"w")
+   output_EleTau = open(output_file_dir+'EleTau.csv',"w")
+   output_MuTau = open(output_file_dir+'EleTau.csv',"w")
+   output_SingleEle = open(output_file_dir+'SingleEle.csv',"w")
+   output_SingleMu = open(output_file_dir+'SingleMu.csv',"w")
+   output_SingleTau = open(output_file_dir+'SingleTau.csv',"w")
+   output_AllHad = open(output_file_dir+'AllHad.csv',"w")
    file_list = [output_table,output_DoubleEle,output_DoubleMu,output_DoubleTau,output_EleMu,output_EleTau,output_MuTau,output_SingleEle,output_SingleMu,output_SingleTau,output_AllHad]
 
    #output_event_changes = open('event_changes.csv',"w")
-   file0 = '/afs/cern.ch/user/m/muell149/work/HLTONLINE/run1/'+rel0+'.root'
-   file1 = '/afs/cern.ch/user/m/muell149/work/HLTONLINE/run1/'+rel1+'.root'
+   file0 = '/afs/cern.ch/user/m/muell149/work/HLTONLINE/root_input_files/'+rel0+'.root'
+   file1 = '/afs/cern.ch/user/m/muell149/work/HLTONLINE/root_input_files/'+rel1+'.root'
    file_rel0 = TFile(file0)
    file_rel1 = TFile(file1)
    hlt_tree0 = file_rel0.Get('genparticles/the_HLT_tree')
@@ -190,7 +202,7 @@ if __name__=='__main__':
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
             
-      #if ientry>5000:#100000:
+      #if ientry>500:#100000:
       #   break
 
       if hlt_event0[0] > evt0:
@@ -323,46 +335,60 @@ if __name__=='__main__':
 
                
    #draw hists
-   hist_file = TFile("hist_file_"+rel0+"_"+rel1+".root","recreate")
-   #title = fired_rel0_not1_decayType_vs_dataset.GetName()
-   #can1 = TCanvas(title,title,1)
+   hist_file = TFile(output_file_dir+"hist_file_"+rel0+"_"+rel1+".root","recreate")
+   title = fired_rel0_not1_decayType_vs_dataset.GetName()
+   can1 = TCanvas(title,title,1)
    fired_rel0_not1_relative_decayType_vs_dataset = fired_rel0_not1_decayType_vs_dataset.Clone()
    fired_rel1_not0_relative_decayType_vs_dataset = fired_rel1_not0_decayType_vs_dataset.Clone()
    
    fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("X")
    fired_rel0_not1_decayType_vs_dataset.LabelsDeflate("Y")
    fired_rel0_not1_decayType_vs_dataset.LabelsOption("v")
+   fired_rel0_not1_decayType_vs_dataset.Draw("COLZ")
+   can1.SetBottomMargin(0.19)
+   can1.SetGrid()
+   can1.SaveAs(output_file_dir+"decayType_vs_dataset_0not1.png")
    fired_rel0_not1_decayType_vs_dataset.SetOption("COLZ")
    fired_rel0_not1_decayType_vs_dataset.Write()
-   #can1.SetBottomMargin(0.19)
-   #can1.SetGrid()
-   #can1.SaveAs("decayType_vs_dataset_0not1.png")
    #can1.SaveAs("decayType_vs_dataset_0not1.root")
 
-   ##title = fired_rel1_not0_decayType_vs_dataset.GetName()
-   #can2 = TCanvas(title,title,1)
+   title = fired_rel1_not0_decayType_vs_dataset.GetName()
+   can2 = TCanvas(title,title,1)
    fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("X")
    fired_rel1_not0_decayType_vs_dataset.LabelsDeflate("Y")
    fired_rel1_not0_decayType_vs_dataset.LabelsOption("v")
+   fired_rel1_not0_decayType_vs_dataset.Draw("COLZ")
+   can2.SetBottomMargin(0.19)
+   can2.SetGrid()
+   can2.SaveAs(output_file_dir+"decayType_vs_dataset_1not0.png")
    fired_rel1_not0_decayType_vs_dataset.SetOption("COLZ")
    fired_rel1_not0_decayType_vs_dataset.Write()
-   #can2.SetBottomMargin(0.19)
-   #can2.SetGrid()
-   #can2.SaveAs("decayType_vs_dataset_1not0.png")
    #can2.SaveAs("decayType_vs_dataset_1not0.root")
 
    fired_rel0_not1_relative_decayType_vs_dataset.Divide(fired_rel0)
    fired_rel1_not0_relative_decayType_vs_dataset.Divide(fired_rel1)
 
+   title = fired_rel0_not1_relative_decayType_vs_dataset.GetName()
+   can3 = TCanvas(title,title,1)
    fired_rel0_not1_relative_decayType_vs_dataset.LabelsDeflate("X")
    fired_rel0_not1_relative_decayType_vs_dataset.LabelsDeflate("Y")
    fired_rel0_not1_relative_decayType_vs_dataset.LabelsOption("v")
+   fired_rel0_not1_relative_decayType_vs_dataset.Draw("COLZ")
+   can3.SetBottomMargin(0.19)
+   can3.SetGrid()
+   can3.SaveAs(output_file_dir+"decayType_vs_dataset_0not1_relative.png")
    fired_rel0_not1_relative_decayType_vs_dataset.SetOption("COLZ")
    fired_rel0_not1_relative_decayType_vs_dataset.Write()
-   
+
+   title = fired_rel1_not0_relative_decayType_vs_dataset.GetName()
+   can4 = TCanvas(title,title,1)
    fired_rel1_not0_relative_decayType_vs_dataset.LabelsDeflate("X")
    fired_rel1_not0_relative_decayType_vs_dataset.LabelsDeflate("Y")
    fired_rel1_not0_relative_decayType_vs_dataset.LabelsOption("v")
+   fired_rel1_not0_relative_decayType_vs_dataset.Draw("COLZ")
+   can4.SetBottomMargin(0.19)
+   can4.SetGrid()
+   can4.SaveAs(output_file_dir+"decayType_vs_dataset_1not0_relative.png")
    fired_rel1_not0_relative_decayType_vs_dataset.SetOption("COLZ")
    fired_rel1_not0_relative_decayType_vs_dataset.Write()
 
