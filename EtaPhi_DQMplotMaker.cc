@@ -71,10 +71,10 @@ vector<double> comp(TH1F* h1, TH1F* h2, char* r1, char* r2){
 
 
 void EtaPhi_DQMplotMaker(void){
-  TFile* f1 = new TFile("/afs/cern.ch/user/m/muell149/work/muell149/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/700pre1DQM.root");///afs/cern.ch/user/m/muell149/work/muell149/CMSSW_6_2_0_pre5/src/DQMOffline/Trigger/test/pre5DQM.root");
-  TFile* f2 = new TFile("/afs/cern.ch/user/m/muell149/work/muell149/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/700pre2DQM.root");
-  char* r1="700_pre1";
-  char* r2="700_pre2";
+  TFile* f1 = new TFile("/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_6_2_0_pre5/src/DQMOffline/Trigger/test/700pre10DQM.root");///afs/cern.ch/user/m/muell149/work/muell149/CMSSW_6_2_0_pre5/src/DQMOffline/Trigger/test/pre5DQM.root");
+  TFile* f2 = new TFile("/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_6_2_0_pre5/src/DQMOffline/Trigger/test/700pre11DQM.root");
+  char* r1="700_pre10";
+  char* r2="700_pre11";
 
   vector<double> drawIt;
   char path[256];

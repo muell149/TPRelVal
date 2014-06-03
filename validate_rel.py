@@ -1,7 +1,8 @@
 #!/usr/bin/python
-from ROOT import TFile,TTree,TH2F, TCanvas
+from ROOT import TFile,TTree,TH2F, TCanvas, gROOT
 import sys, time, array, subprocess, commands
- 
+gROOT.SetBatch()
+
 start_time = time.time()
 
 def writeTable(file,dict_num,dict_str):
@@ -51,8 +52,8 @@ def GetDecayType(gen_tree):
 #def main():
 if __name__=='__main__':
    
-   rel0 = '700pre11'
-   rel1 = '700pre13'
+   rel0 = '710pre5_hiPU_v2'
+   rel1 = '710pre7_hiPU'
    output_file_dir = '/afs/cern.ch/user/m/muell149/steam_validation/'+rel0+'_'+rel1+'/'
    #output_file_dir = ''
 
@@ -81,8 +82,8 @@ if __name__=='__main__':
    file_list = [output_table,output_DoubleEle,output_DoubleMu,output_DoubleTau,output_EleMu,output_EleTau,output_MuTau,output_SingleEle,output_SingleMu,output_SingleTau,output_AllHad]
 
    #output_event_changes = open('event_changes.csv',"w")
-   file0 = '/afs/cern.ch/user/m/muell149/work/HLTONLINE/root_input_files/'+rel0+'.root'
-   file1 = '/afs/cern.ch/user/m/muell149/work/HLTONLINE/root_input_files/'+rel1+'.root'
+   file0 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel0+'.root'
+   file1 = '/afs/cern.ch/user/m/muell149/workb/HLTONLINE/CMSSW_7_0_0_pre1/src/DQMOffline/Trigger/test/'+rel1+'.root'
    file_rel0 = TFile(file0)
    file_rel1 = TFile(file1)
    hlt_tree0 = file_rel0.Get('genparticles/the_HLT_tree')
@@ -202,7 +203,7 @@ if __name__=='__main__':
       hlt_tree0.GetEntry(ientry-diff0)
       hlt_tree1.GetEntry(ientry-diff1)
             
-      #if ientry>500:#100000:
+      #if ientry>50000:#100000:
       #   break
 
       if hlt_event0[0] > evt0:
@@ -333,6 +334,65 @@ if __name__=='__main__':
 
                               
 
+   #####
+   sum_path_fired0_not1 = len([arr[2] for arr in output_list[0].values() if arr[2]!=0])
+   sum_path_fired1_not0 = len([arr[3] for arr in output_list[0].values() if arr[3]!=0])
+   sum_event_fired0_not1 = len([arr[1] for arr in event_dict.values() if arr[1]!=0])
+   sum_event_fired1_not0 = len([arr[2] for arr in event_dict.values() if arr[2]!=0])
+   sum_path_accpt0 = len([arr[0] for arr in output_list[0].values() if arr[0]!=0])
+   sum_path_accpt1 = len([arr[1] for arr in output_list[0].values() if arr[1]!=0])
+   sum_changes = len([arr[0] for arr in event_dict.values() if arr[0]!=0])
+
+   output_log.write("Events in rel0: %s\n"%evt0)
+   output_log.write("Events in rel1: %s\n"%evt1)
+
+   output_log.write("Paths in rel0: %s\n"%pidx0)
+   output_log.write("Paths in rel1: %s\n"%pidx1)
+   output_log.write("events with paths that fired in %(1)s and didnt fire in %(2)s : %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_event_fired0_not1}) 
+   output_log.write("events with paths that fired in %(1)s and didnt fire in %(2)s : %(3)s\n"%{"1":rel1,"2":rel0,"3":sum_event_fired1_not0})
+   output_log.write("# of paths accepted in %(1)s: %(2)s\n"%{"1":rel0,"2":sum_path_accpt0})
+   output_log.write("# of paths accepted in %(1)s: %(2)s\n"%{"1":rel1,"2":sum_path_accpt1})
+   output_log.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3": sum_path_fired0_not1})
+   output_log.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel1,"2":rel0,"3": sum_path_fired1_not0})
+   output_log.write("# of events that changed from %(1)s to %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_changes})
+   output_log.write("total # of events in %(1)s: %(2)s\n"%{"1":rel0,"2":entries0/(pidx0+1)})
+   output_log.write("total # of events in %(1)s: %(2)s\n"%{"1":rel1,"2":entries1/(pidx1+1)})
+   output_log.write(" \n")
+   output_log.write("Events that gained counts by decay type\n")
+   output_log.write("Double Ele: %s\n"%rel1not0_dt_dict[1])
+   output_log.write("Double Mu: %s\n"%rel1not0_dt_dict[2])
+   output_log.write("Double Tau: %s\n"%rel1not0_dt_dict[3])
+   output_log.write("Ele + Mu: %s\n"%rel1not0_dt_dict[4])
+   output_log.write("Ele + Tau: %s\n"%rel1not0_dt_dict[5])
+   output_log.write("Mu + Tau: %s\n"%rel1not0_dt_dict[6])
+   output_log.write("Single Ele: %s\n"%rel1not0_dt_dict[7])
+   output_log.write("Single Mu: %s\n"%rel1not0_dt_dict[8])
+   output_log.write("Single Tau: %s\n"%rel1not0_dt_dict[9])
+   output_log.write("All Had: %s\n"%rel1not0_dt_dict[10])
+   output_log.write(" \n")
+   output_log.write("Events that lost counts by decay type\n")
+   output_log.write("Double Ele: %s\n"%rel0not1_dt_dict[1])
+   output_log.write("Double Mu: %s\n"%rel0not1_dt_dict[2])
+   output_log.write("Double Tau: %s\n"%rel0not1_dt_dict[3])
+   output_log.write("Ele + Mu: %s\n"%rel0not1_dt_dict[4])
+   output_log.write("Ele + Tau: %s\n"%rel0not1_dt_dict[5])
+   output_log.write("Mu + Tau: %s\n"%rel0not1_dt_dict[6])
+   output_log.write("Single Ele: %s\n"%rel0not1_dt_dict[7])
+   output_log.write("Single Mu: %s\n"%rel0not1_dt_dict[8])
+   output_log.write("Single Tau: %s\n"%rel0not1_dt_dict[9])
+   output_log.write("All Had: %s\n"%rel0not1_dt_dict[10])
+   output_log.write(" \n")
+   output_log.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
+   exectime = time.time()-start_time
+   output_log.write("Exectution time = %f\n"%exectime)
+   output_log.close()
+
+   for i in xrange(11):
+      writeTable(file_list[i],output_list[i],path_str_dict)
+
+   #output_event_changes.close()
+   print "Execution time = ", time.time()-start_time," sec"
+
                
    #draw hists
    hist_file = TFile(output_file_dir+"hist_file_"+rel0+"_"+rel1+".root","recreate")
@@ -393,65 +453,6 @@ if __name__=='__main__':
    fired_rel1_not0_relative_decayType_vs_dataset.Write()
 
    #####
-   sum_path_fired0_not1 = len([arr[2] for arr in output_list[0].values() if arr[2]!=0])
-   sum_path_fired1_not0 = len([arr[3] for arr in output_list[0].values() if arr[3]!=0])
-   sum_event_fired0_not1 = len([arr[1] for arr in event_dict.values() if arr[1]!=0])
-   sum_event_fired1_not0 = len([arr[2] for arr in event_dict.values() if arr[2]!=0])
-   sum_path_accpt0 = len([arr[0] for arr in output_list[0].values() if arr[0]!=0])
-   sum_path_accpt1 = len([arr[1] for arr in output_list[0].values() if arr[1]!=0])
-   sum_changes = len([arr[0] for arr in event_dict.values() if arr[0]!=0])
-
-   output_log.write("Events in rel0: %s\n"%evt0)
-   output_log.write("Events in rel1: %s\n"%evt1)
-   output_log.write("Paths in rel0: %s\n"%pidx0)
-   output_log.write("Paths in rel1: %s\n"%pidx1)
-   output_log.write("events with paths that fired in %(1)s and didnt fire in %(2)s : %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_event_fired0_not1}) 
-   output_log.write("events with paths that fired in %(1)s and didnt fire in %(2)s : %(3)s\n"%{"1":rel1,"2":rel0,"3":sum_event_fired1_not0})
-   output_log.write("# of paths accepted in %(1)s: %(2)s\n"%{"1":rel0,"2":sum_path_accpt0})
-   output_log.write("# of paths accepted in %(1)s: %(2)s\n"%{"1":rel1,"2":sum_path_accpt1})
-   output_log.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3": sum_path_fired0_not1})
-   output_log.write("# of paths that fired in %(1)s  and didn't fire in %(2)s: %(3)s\n"%{"1":rel1,"2":rel0,"3": sum_path_fired1_not0})
-   output_log.write("# of events that changed from %(1)s to %(2)s: %(3)s\n"%{"1":rel0,"2":rel1,"3":sum_changes})
-   output_log.write("total # of events in %(1)s: %(2)s\n"%{"1":rel0,"2":entries0/(pidx0+1)})
-   output_log.write("total # of events in %(1)s: %(2)s\n"%{"1":rel1,"2":entries1/(pidx1+1)})
-   output_log.write(" \n")
-   output_log.write("Events that gained counts by decay type\n")
-   output_log.write("Double Ele: %s\n"%rel1not0_dt_dict[1])
-   output_log.write("Double Mu: %s\n"%rel1not0_dt_dict[2])
-   output_log.write("Double Tau: %s\n"%rel1not0_dt_dict[3])
-   output_log.write("Ele + Mu: %s\n"%rel1not0_dt_dict[4])
-   output_log.write("Ele + Tau: %s\n"%rel1not0_dt_dict[5])
-   output_log.write("Mu + Tau: %s\n"%rel1not0_dt_dict[6])
-   output_log.write("Single Ele: %s\n"%rel1not0_dt_dict[7])
-   output_log.write("Single Mu: %s\n"%rel1not0_dt_dict[8])
-   output_log.write("Single Tau: %s\n"%rel1not0_dt_dict[9])
-   output_log.write("All Had: %s\n"%rel1not0_dt_dict[10])
-   output_log.write(" \n")
-   output_log.write("Events that lost counts by decay type\n")
-   output_log.write("Double Ele: %s\n"%rel0not1_dt_dict[1])
-   output_log.write("Double Mu: %s\n"%rel0not1_dt_dict[2])
-   output_log.write("Double Tau: %s\n"%rel0not1_dt_dict[3])
-   output_log.write("Ele + Mu: %s\n"%rel0not1_dt_dict[4])
-   output_log.write("Ele + Tau: %s\n"%rel0not1_dt_dict[5])
-   output_log.write("Mu + Tau: %s\n"%rel0not1_dt_dict[6])
-   output_log.write("Single Ele: %s\n"%rel0not1_dt_dict[7])
-   output_log.write("Single Mu: %s\n"%rel0not1_dt_dict[8])
-   output_log.write("Single Tau: %s\n"%rel0not1_dt_dict[9])
-   output_log.write("All Had: %s\n"%rel0not1_dt_dict[10])
-   output_log.write(" \n")
-   output_log.write("Fractional change in events from %(1)s to %(2)s: %(3)s  percent\n"%{"1":rel0,"2":rel1,"3":100.00*sum_changes*(pidx0+1)/entries0})
-   exectime = time.time()-start_time
-   output_log.write("Exectution time = %f\n"%exectime)
-   output_log.close()
-
-   for i in xrange(11):
-      writeTable(file_list[i],output_list[i],path_str_dict)
-
-   #output_event_changes.close()
-   print "Execution time = ", time.time()-start_time," sec"
-
-   
-   
 
 #if __name__=='__main__':
 #   main()
