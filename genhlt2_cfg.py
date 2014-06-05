@@ -16,10 +16,10 @@ process.maxEvents = cms.untracked.PSet(
 process.source = cms.Source("PoolSource",
     	fileNames = cms.untracked.vstring(
         #'file:/afs/cern.ch/user/m/muell149/work/muell149/HLTONLINE/CMSSW_6_2_0_pre6/src/HLTrigger/Configuration/test/outputA.root'
-         'file:/afs/cern.ch/user/m/muell149/work/muell149/HLTONLINE/CMSSW_6_2_0_patch1/src/HLTrigger/Configuration/test/SingleMuPt100_triggerRef25ns_outputA.root'
-        )
+         'file:/afs/cern.ch/user/m/muell149/work/HLTONLINE/CMSSW_7_1_0_pre8/src/HLTrigger/Configuration/test/outputA.root'
+         )
                             
-)
+                            )
 
 #process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange(
 #    '199812:70-199812:80'
@@ -33,7 +33,7 @@ process.newHLTOffline.HltProcessName = 'HLTGRun' # use 'HLT' for centrally produ
 
 process.TFileService = cms.Service("TFileService",
                                    #fileName = cms.string("620_pre7_special_charlieOnLine_with_geninfo_lastfilter.root")
-                                   fileName = cms.string("SingleMuPt100_TriggerRef25ns.root")
+                                   fileName = cms.string("710pre8_hiPU.root")
                                    )
 
 process.p = cms.Path(process.newHLTOffline+process.genparticles)
